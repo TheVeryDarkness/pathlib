@@ -288,10 +288,7 @@ mod tests {
                     (path_actual.parent(), path_actual.file_name());
                 assert_eq!(
                     (parent_actual, file_name_actual),
-                    (
-                        parent.map(|p| Path::new(p)),
-                        file_name.map(|p| OsStr::new(p))
-                    ),
+                    (parent.map(Path::new), file_name.map(OsStr::new)),
                     "parent() and file_name() of {path:?}",
                 );
             }
