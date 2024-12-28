@@ -1,9 +1,9 @@
 use std::ops::Add;
 
 /// The current directory.
-const CURRENT_DIR: &'static str = ".";
+const CURRENT_DIR: &str = ".";
 /// The parent directory.
-const PARENT_DIR: &'static str = "..";
+const PARENT_DIR: &str = "..";
 
 #[inline]
 fn rsplit_once_with_delimiter<'i>(
@@ -51,7 +51,7 @@ pub trait PathParser {
         loop {
             match rsplit_once_with_delimiter(s, Self::COMPONENT_SEPARATORS) {
                 Some((parent, separator, component)) => {
-                    s = &parent;
+                    s = parent;
                     if let Some(p) = s.strip_suffix(Self::ESCAPE_CHAR) {
                         s = p;
                         continue;

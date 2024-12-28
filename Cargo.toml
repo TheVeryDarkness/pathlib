@@ -2,6 +2,10 @@
 name = "pathlib"
 version = "0.1.0"
 description = "A simple path library"
+license = "MIT"
+keywords = ["path", "pathlib"]
+categories = ["filesystem"]
+repository = "https://github.com/TheVeryDarkness/pathlib"
 edition = "2021"
 
 [dependencies]
