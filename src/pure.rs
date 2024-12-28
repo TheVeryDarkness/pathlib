@@ -319,4 +319,26 @@ mod tests {
             }
         }
     }
+
+    const JOIN: &'static [(&str, &str, &str)] = &[
+        ("/foo", "bar", "/foo/bar"),
+        ("/foo", "/bar", "/bar"),
+        ("/foo/", "bar", "/foo/bar"),
+        ("/foo/", "/bar", "/bar"),
+        ("/foo", "/bar/", "/bar/"),
+        ("/foo/", "/bar/", "/bar/"),
+        ("/foo/", "/bar/baz", "/bar/baz"),
+        ("/foo/", "bar/baz", "/foo/bar/baz"),
+        ("/foo/", "bar/baz/", "/foo/bar/baz/"),
+        ("/foo/", "/bar/baz/", "/bar/baz/"),
+    ];
+    #[test]
+    fn join() {
+        for &(a, b, c) in JOIN {
+            let a = PurePosixPath::from(a);
+            let b = PurePosixPath::from(b);
+            let c = PurePosixPath::from(c);
+            assert_eq!(a.join(&b), c, "{:?}.join({:?})", a, b);
+        }
+    }
 }
