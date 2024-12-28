@@ -317,7 +317,7 @@ mod tests {
         }
     }
 
-    const JOIN: &'static [(&str, &str, &str)] = &[
+    const JOIN: &[(&str, &str, &str)] = &[
         ("/foo", "bar", "/foo/bar"),
         ("/foo", "/bar", "/bar"),
         ("/foo/", "bar", "/foo/bar"),
