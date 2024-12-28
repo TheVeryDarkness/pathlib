@@ -1,0 +1,11 @@
+[package]
+name = "pathlib"
+version = "0.1.0"
+description = "A simple path library"
+edition = "2021"
+
+[dependencies]
+
+[features]
+default = ["std"]
+std = []

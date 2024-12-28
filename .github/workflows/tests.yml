@@ -1,0 +1,107 @@
+on:
+  push:
+    branches: "*"
+  schedule:
+    - cron: "0 0 * * 6" # Run benchmarks every Saturday at midnight.
+
+name: Lint and Test
+
+env:
+  RUSTFLAGS: "-Dwarnings"
+  RUST_BACKTRACE: 1
+
+jobs:
+  check:
+    name: Test
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      OS: ${{ matrix.os }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      - name: Install Rust Toolchain
+        id: toolchain
+        uses: dtolnay/rust-toolchain@v1
+        with:
+          toolchain: "1.56.0"
+      - name: cargo test
+        run: cargo test --workspace
+      # - name: Install cargo-llvm-cov
+      #   uses: taiki-e/install-action@cargo-llvm-cov
+      # - name: Generate Code Coverage
+      #   run: cargo llvm-cov --workspace --lcov --output-path lcov.info
+      # - name: Upload Results to Codecov
+      #   uses: codecov/codecov-action@v3
+      #   env:
+      #     RUSTUP_TOOLCHAIN: ${{ steps.toolchain.outputs.name }}
+      #   with:
+      #     file: lcov.info
+      #     flags: unittests
+      #     name: pathlib
+      #     env_vars: OS,RUSTUP_TOOLCHAIN
+      #     # Failing to upload results will cause a CI error.
+      #     # So remember to use a token.
+      #     fail_ci_if_error: true
+      #     token: ${{ secrets.CODECOV_TOKEN }}
+      #     verbose: true
+
+  miri:
+    name: MIRI Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      - name: Install Rust Toolchain
+        uses: dtolnay/rust-toolchain@v1
+        with:
+          toolchain: nightly
+          components: miri
+      - name: cargo miri
+        run: cargo miri test --workspace
+
+  coverage:
+    name: Lint and Test Coverage
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      OS: ${{ matrix.os }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      - name: Install Rust Toolchain
+        id: toolchain
+        uses: dtolnay/rust-toolchain@v1
+        with:
+          toolchain: stable
+          components: llvm-tools-preview, rustfmt, clippy
+      - name: cargo fmt
+        run: cargo fmt --all -- --check
+      - name: cargo clippy
+        run: cargo clippy --workspace --all-targets
+      - name: cargo doc
+        run: cargo doc --workspace
+      - name: cargo doc test
+        run: cargo test --doc --workspace
+      # - name: Install cargo-llvm-cov
+      #   uses: taiki-e/install-action@cargo-llvm-cov
+      # - name: Generate Code Coverage
+      #   run: cargo llvm-cov --workspace --lcov --output-path lcov.info
+      # - name: Upload Results to Codecov
+      #   uses: codecov/codecov-action@v3
+      #   env:
+      #     RUSTUP_TOOLCHAIN: ${{ steps.toolchain.outputs.name }}
+      #   with:
+      #     file: lcov.info
+      #     flags: unittests
+      #     name: pathlib
+      #     env_vars: OS,RUSTUP_TOOLCHAIN
+      #     # Failing to upload results will cause a CI error.
+      #     # So remember to use a token.
+      #     fail_ci_if_error: true
+      #     token: ${{ secrets.CODECOV_TOKEN }}
+      #     verbose: true
