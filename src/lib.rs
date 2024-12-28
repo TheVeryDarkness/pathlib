@@ -1,5 +1,5 @@
 #![forbid(rust_2021_compatibility, rust_2018_idioms, future_incompatible)]
-#![forbid(
+#![deny(
     unused_imports,
     unused_qualifications,
     unused_results,
