@@ -66,6 +66,22 @@ impl<'a> PurePath for UnifiedPath<'a> {
     }
 }
 
+impl<'a> From<&'a crate::PosixPath> for UnifiedPath<'a> {
+    fn from(path: &'a crate::PosixPath) -> Self {
+        Self {
+            components: path.components().collect(),
+        }
+    }
+}
+
+impl<'a> From<&'a crate::WindowsPath> for UnifiedPath<'a> {
+    fn from(path: &'a crate::WindowsPath) -> Self {
+        Self {
+            components: path.components().collect(),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
