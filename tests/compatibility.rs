@@ -5,6 +5,7 @@ use pathlib::{
 #[cfg(feature = "std")]
 use std::{
     ffi::OsStr,
+    fs,
     path::{Path, PathBuf},
 };
 
@@ -316,5 +317,63 @@ fn extension() {
                 "file_stem() and extension() of {path:?}",
             );
         }
+    }
+}
+
+#[test]
+fn fs() {
+    #[cfg(feature = "std")]
+    {
+        fs::create_dir("./tmp").unwrap();
+        let dir = PathBuf::from("./tmp");
+        assert!(dir.exists());
+        let metadata = dir.metadata().unwrap();
+        assert!(metadata.is_dir());
+        assert!(!metadata.is_file());
+        assert!(!metadata.is_symlink());
+        assert!(dir.read_link().is_err());
+        assert!(dir.symlink_metadata().unwrap().is_dir());
+        assert!(dir.canonicalize().is_ok());
+        assert!(dir.try_exists().unwrap());
+        assert!(dir.read_dir().is_ok());
+
+        let file_1 = PathBuf::from("./tmp/foo.txt");
+        fs::write(&file_1, b"Hello, world!").unwrap();
+        assert!(file_1.exists());
+        let metadata = file_1.metadata().unwrap();
+        assert!(!metadata.is_dir());
+        assert!(metadata.is_file());
+        assert!(!metadata.is_symlink());
+        assert!(file_1.read_link().is_err());
+        assert!(file_1.symlink_metadata().unwrap().is_file());
+        assert!(file_1.canonicalize().is_ok());
+        assert!(file_1.try_exists().unwrap());
+        assert!(file_1.read_dir().is_err());
+
+        let file_2 = PathBuf::from("./tmp/bar.txt");
+        fs::write(&file_2, b"Hello, world!").unwrap();
+        assert!(file_2.exists());
+        let metadata = file_2.metadata().unwrap();
+        assert!(!metadata.is_dir());
+        assert!(metadata.is_file());
+        assert!(!metadata.is_symlink());
+        assert!(file_2.read_link().is_err());
+        assert!(file_2.symlink_metadata().unwrap().is_file());
+        assert!(file_2.canonicalize().is_ok());
+        assert!(file_2.try_exists().unwrap());
+        assert!(file_2.read_dir().is_err());
+
+        let files = dir
+            .read_dir()
+            .unwrap()
+            .collect::<Result<Vec<_>, _>>()
+            .unwrap();
+        assert_eq!(files.len(), 2);
+        assert!(files.iter().any(|entry| entry.path() == file_1));
+        assert!(files.iter().any(|entry| entry.path() == file_2));
+
+        fs::remove_file(file_1).unwrap();
+
+        fs::remove_dir(dir).unwrap();
     }
 }
