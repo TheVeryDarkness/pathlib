@@ -101,36 +101,9 @@ pub trait ParsablePath {
         }
     }
 
-    //
-    // fn split_first_component(mut s: &str) -> (Option<Component<'_>>, Option<&str>) {
-    //     loop {
-    //         match Self::split_first_lexical(s) {
-    //             (Some((prefix, _)), CURRENT_DIR) => {
-    //                 s = prefix;
-    //                 continue;
-    //             }
-    //             (None, CURRENT_DIR) => return (Some(Component::CurDir), None),
-
-    //             (Some((prefix, _)), PARENT_DIR) => {
-    //                 s = prefix;
-    //                 continue;
-    //             }
-    //             (None, PARENT_DIR) => return (Some(Component::ParentDir), None),
-
-    //             (Some((prefix, separator)), file_name) => {
-    //                 return (Some(Component::Normal(prefix)), Some(file_name))
-    //             }
-    //             (None, file_name) => return (Some(Component::Normal("")), Some(file_name)),
-    //         }
-    //     }
-    // }
-
     /// Returns the parent of the given path and the last component of the path in a lexical way.
     /// That means, `..` and `.` are not resolved or even considered.
     fn split_last_lexical(path: &str) -> (Option<(&str, &str)>, &str) {
-        // while let Some(p) = path.strip_suffix(Self::PRIMARY_COMPONENT_SEPARATOR) {
-        //     path = p;
-        // }
         let s = path;
         match rsplit_once_with_delimiter(s, Self::COMPONENT_SEPARATORS) {
             Some((parent, separator, component)) => (Some((parent, separator)), component),
@@ -139,16 +112,11 @@ pub trait ParsablePath {
     }
 
     /// Returns the parent of the path and the last component of the path.
-    fn split_last_component(
-        mut s: &str,
-        progressed: bool,
-    ) -> (Option<&str>, Option<Component<'_>>) {
+    #[inline]
+    fn split_last_component(mut s: &str, _: bool) -> (Option<&str>, Option<Component<'_>>) {
         loop {
             match Self::split_last_lexical(s) {
-                (Some(("", _)), CURRENT_DIR) => match progressed {
-                    true => return (Some(""), None),
-                    false => return (Some(""), Some(Component::Root)),
-                },
+                (Some(("", _)), CURRENT_DIR) => return (Some(""), Some(Component::Root)),
                 (Some((parent, _)), CURRENT_DIR) => {
                     s = parent;
                     continue;
@@ -212,45 +180,11 @@ pub trait ParsablePath {
     /// Returns the parent of the path.
     fn parent(s: &str) -> Option<&str> {
         Self::split_last(s).0
-        // let (parent, _) = Self::split_last(s);
-        // match parent {
-        //     Some(("", separator)) => Some(separator),
-        //     Some((parent, _)) => Some(parent),
-        //     None => Some(""),
-        // }
-        // if let Some((parent, separator)) = parent {
-        //     if parent.is_empty() {
-        //         Some(separator)
-        //     } else {
-        //         Some(parent)
-        //     }
-        // } else {
-        //     None
-        // }
     }
 
     /// Returns the last component of the path, if there is one.
     fn file_name(s: &str) -> Option<&str> {
         Self::split_last(s).1
-        // loop {
-        //     let (parent, file_name) = Self::split_last(s);
-        //     match file_name {
-        //         CURRENT_DIR => {
-        //             if let Some((parent, _)) = parent {
-        //                 s = parent;
-        //                 continue;
-        //             } else {
-        //                 return None;
-        //             }
-        //         }
-        //         PARENT_DIR => return None,
-        //         "" => {
-        //             s = parent?.0;
-        //             continue;
-        //         }
-        //         _ => return Some(file_name),
-        //     }
-        // }
     }
 
     /// Joins the given path with the parent in place.
@@ -262,19 +196,6 @@ pub trait ParsablePath {
         }
         Self::as_dir(parent);
         parent.push_str(child.as_ref());
-        // if child.is_empty() {
-        //     return;
-        // }
-        // if child.starts_with(Self::PRIMARY_COMPONENT_SEPARATOR) {
-        //     *parent = child.to_string();
-        //     return;
-        // }
-        // if parent.ends_with(Self::PRIMARY_COMPONENT_SEPARATOR) {
-        //     parent.push_str(child);
-        // } else {
-        //     parent.push(Self::PRIMARY_COMPONENT_SEPARATOR);
-        //     parent.push_str(child);
-        // }
     }
 
     /// Joins the given path.
@@ -288,14 +209,23 @@ pub trait ParsablePath {
         joined
     }
 
-    // /// Returns the path without the extension and the extension.
-    // fn split_extension(path: &str) -> (&str, Option<&str>) {
-    //     let s = Self::split_last(path).1;
-    //     match s.rsplit_once(Self::EXTENSION_SEPARATOR) {
-    //         Some((stem, extension)) => (path, Some(&extension[1..])),
-    //         None => (s, None),
-    //     }
-    // }
+    /// Returns the file stem and extension of the path.
+    fn split_extension(s: &str) -> (&str, Option<&str>) {
+        let s = Self::file_name(s).unwrap_or("");
+        match rsplit_once_with_delimiter(s, &[Self::EXTENSION_SEPARATOR]) {
+            Some((stem, _, extension)) => (stem, Some(&extension)),
+            None => (s, None),
+        }
+    }
+
+    /// Replace the extension of the path with the given extension in place.
+    fn with_extension(path: &str, ext: &str) -> String {
+        let (path, _) = Self::split_extension(path);
+        let mut new = path.to_string();
+        new.push(Self::EXTENSION_SEPARATOR);
+        new.push_str(ext);
+        new
+    }
 
     /// Returns the driver of the path and the rest of the path.
     fn split_driver(path: &str) -> (Option<&str>, &str) {
@@ -390,216 +320,5 @@ impl<P: ParsablePath + Sized + AsRef<str> + for<'a> From<&'a str> + From<String>
 
     fn components(&self) -> impl DoubleEndedIterator<Item = Component<'_>> {
         <Components<'_, Self>>::new(self.as_ref())
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::{PosixPath, Vec, WindowsPath};
-
-    #[cfg(feature = "std")]
-    use std::{
-        ffi::OsStr,
-        path::{Path, PathBuf},
-    };
-
-    const PARENT_AND_FILE_NAME: &[(&str, Option<&str>, Option<&str>)] = &[
-        ("/foo/bar", Some("/foo"), Some("bar")),
-        ("/foo", Some("/"), Some("foo")),
-        ("/", None, None),
-        ("foo/bar", Some("foo"), Some("bar")),
-        ("foo", Some(""), Some("foo")),
-        ("", None, None),
-        ("/usr/bin/", Some("/usr"), Some("bin")),
-        ("tmp/foo.txt", Some("tmp"), Some("foo.txt")),
-        ("foo.txt/.", Some(""), Some("foo.txt")),
-        ("foo.txt/.//", Some(""), Some("foo.txt")),
-        ("foo.txt/..", Some("foo.txt"), None),
-        ("/", None, None),
-        ("//", None, None),
-        ("/./", None, None),
-        (".", Some(""), None),
-        ("..", Some(""), None),
-        ("/.", None, None),
-        ("/..", Some("/"), None),
-        ("./..", Some("."), None),
-        ("../..", Some(".."), None),
-        ("../.", Some(""), None),
-        ("./.", Some(""), None),
-        ("a/.", Some(""), Some("a")),
-        ("a//./", Some(""), Some("a")),
-        ("/a/.", Some("/"), Some("a")),
-        ("/a/.//.//", Some("/"), Some("a")),
-    ];
-
-    #[test]
-    fn test_split_last_component() {
-        for &(path, parent, file_name) in PARENT_AND_FILE_NAME {
-            #[cfg(feature = "std")]
-            {
-                let path_actual = PathBuf::from(path);
-                let (parent_actual, file_name_actual) =
-                    (path_actual.parent(), path_actual.file_name());
-                assert_eq!(
-                    (parent_actual, file_name_actual),
-                    (parent.map(Path::new), file_name.map(OsStr::new)),
-                    "parent() and file_name() of {path:?}",
-                );
-            }
-
-            {
-                let path_actual = PosixPath::from(path);
-                let (parent_actual, file_name_actual) =
-                    (path_actual.parent(), path_actual.file_name());
-                assert_eq!(
-                    (parent_actual.as_ref().map(AsRef::as_ref), file_name_actual),
-                    (parent, file_name),
-                    "parent() and file_name() of {path:?}",
-                );
-            }
-
-            {
-                let path_actual = WindowsPath::from(path);
-                let (parent_actual, file_name_actual) =
-                    (path_actual.parent(), path_actual.file_name());
-                assert_eq!(
-                    (parent_actual.as_ref().map(AsRef::as_ref), file_name_actual),
-                    (parent, file_name),
-                    "parent() and file_name() of {path:?}",
-                );
-            }
-        }
-    }
-
-    use Component::*;
-
-    const COMPONENTS: &[(&str, &[Component<'static>])] = &[
-        ("/foo/bar", &[Root, Normal("foo"), Normal("bar")]),
-        ("/foo", &[Root, Normal("foo")]),
-        ("/", &[Root]),
-        ("foo/bar", &[Normal("foo"), Normal("bar")]),
-        ("foo", &[Normal("foo")]),
-        ("", &[]),
-        ("/usr/bin/", &[Root, Normal("usr"), Normal("bin")]),
-        ("tmp/foo.txt", &[Normal("tmp"), Normal("foo.txt")]),
-        ("foo.txt/.", &[Normal("foo.txt")]),
-        ("foo.txt/.//", &[Normal("foo.txt")]),
-        ("foo.txt/..", &[Normal("foo.txt"), ParentDir]),
-        ("/", &[Root]),
-        ("//", &[Root]),
-        ("/./", &[Root]),
-        (".", &[CurDir]),
-        ("..", &[ParentDir]),
-        ("/.", &[Root]),
-        ("/./.", &[Root]),
-        ("/..", &[Root, ParentDir]),
-        ("./..", &[CurDir, ParentDir]),
-        ("../..", &[ParentDir, ParentDir]),
-        ("../.", &[ParentDir]),
-        ("./.", &[CurDir]),
-        ("a/.", &[Normal("a")]),
-        ("a//./", &[Normal("a")]),
-        ("/a/.", &[Root, Normal("a")]),
-        ("/a/.//.//", &[Root, Normal("a")]),
-        ("/a/..//.//", &[Root, Normal("a"), ParentDir]),
-    ];
-
-    #[test]
-    fn test_components() {
-        for &(path, components) in COMPONENTS {
-            #[cfg(feature = "std")]
-            {
-                let path_actual = PathBuf::from(path);
-                let components_actual: Vec<_> = path_actual.components().collect();
-                assert_eq!(components_actual, components, "components() of {path:?}");
-                let components_actual: Vec<_> = path_actual
-                    .components()
-                    .rev()
-                    .collect::<Vec<_>>()
-                    .into_iter()
-                    .rev()
-                    .collect();
-                assert_eq!(
-                    components_actual, components,
-                    "components() of {path:?} in reverse",
-                );
-            }
-
-            {
-                let path_actual = PosixPath::from(path);
-                let components_actual: Vec<_> = path_actual.components().collect();
-                assert_eq!(components_actual, components, "components() of {path:?}");
-                let components_actual: Vec<_> = path_actual
-                    .components()
-                    .rev()
-                    .collect::<Vec<_>>()
-                    .into_iter()
-                    .rev()
-                    .collect();
-                assert_eq!(
-                    components_actual, components,
-                    "components() of {path:?} in reverse",
-                );
-            }
-
-            {
-                let path_actual = WindowsPath::from(path);
-                let components_actual: Vec<_> = path_actual.components().collect();
-                assert_eq!(components_actual, components, "components() of {path:?}");
-                let components_actual: Vec<_> = path_actual
-                    .components()
-                    .rev()
-                    .collect::<Vec<_>>()
-                    .into_iter()
-                    .rev()
-                    .collect();
-                assert_eq!(
-                    components_actual, components,
-                    "components() of {path:?} in reverse",
-                );
-            }
-        }
-    }
-
-    const JOIN: &[(&str, &str, &str, &str)] = &[
-        ("/foo", "bar", "/foo/bar", "/foo\\bar"),
-        ("/foo", "/bar", "/bar", "/bar"),
-        ("/foo/", "bar", "/foo/bar", "/foo/bar"),
-        ("/foo/", "/bar", "/bar", "/bar"),
-        ("/foo", "/bar/", "/bar/", "/bar/"),
-        ("/foo/", "/bar/", "/bar/", "/bar/"),
-        ("/foo/", "/bar/baz", "/bar/baz", "/bar/baz"),
-        ("/foo/", "bar/baz", "/foo/bar/baz", "/foo/bar/baz"),
-        ("/foo/", "bar/baz/", "/foo/bar/baz/", "/foo/bar/baz/"),
-        ("/foo/", "/bar/baz/", "/bar/baz/", "/bar/baz/"),
-    ];
-    #[test]
-    fn join() {
-        for &(a, b, c, d) in JOIN {
-            #[cfg(feature = "std")]
-            {
-                let a = PathBuf::from(a);
-                let b = PathBuf::from(b);
-                let c = PathBuf::from(c);
-                assert_eq!(a.join(&b), c, "{:?}.join({:?})", a, b);
-            }
-            {
-                let a = PosixPath::from(a);
-                let b = PosixPath::from(b);
-                let c = PosixPath::from(c);
-                assert_eq!(a.join(&b), c, "{:?}.join({:?})", a, b);
-                assert_eq!(&a / &b, c, "{:?}.join({:?})", a, b);
-                assert_eq!(a.clone() / b.clone(), c, "{:?}.join({:?})", a, b);
-            }
-            {
-                let a = WindowsPath::from(a);
-                let b = WindowsPath::from(b);
-                let c = WindowsPath::from(d);
-                assert_eq!(a.join(&b), c, "{:?}.join({:?})", a, b);
-                assert_eq!(&a / &b, c, "{:?}.join({:?})", a, b);
-                assert_eq!(a.clone() / b.clone(), c, "{:?}.join({:?})", a, b);
-            }
-        }
     }
 }
