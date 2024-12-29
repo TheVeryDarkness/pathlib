@@ -213,7 +213,7 @@ pub trait ParsablePath {
     fn split_extension(s: &str) -> (&str, Option<&str>) {
         let s = Self::file_name(s).unwrap_or("");
         match rsplit_once_with_delimiter(s, &[Self::EXTENSION_SEPARATOR]) {
-            Some((stem, _, extension)) => (stem, Some(&extension)),
+            Some((stem, _, extension)) => (stem, Some(extension)),
             None => (s, None),
         }
     }
