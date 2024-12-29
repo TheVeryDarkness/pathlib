@@ -27,6 +27,9 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 //! A simple path manipulation library.
 
+#[cfg(not(feature = "std"))]
+extern crate alloc;
+
 mod comp;
 mod nt;
 #[cfg(feature = "std")]
@@ -34,6 +37,11 @@ mod path;
 mod posix;
 mod pure;
 mod unified;
+
+#[cfg(not(feature = "std"))]
+use alloc::{borrow::ToOwned, string::String, vec, vec::Vec};
+#[cfg(feature = "std")]
+use std::{borrow::ToOwned, string::String, vec, vec::Vec};
 
 pub use comp::{Component, Components};
 pub use nt::WindowsPath;

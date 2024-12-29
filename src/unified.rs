@@ -1,4 +1,4 @@
-use crate::{Component, PurePath};
+use crate::{vec, Component, PurePath, Vec};
 
 /// A unified path.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
@@ -16,7 +16,7 @@ impl<'a> FromIterator<Component<'a>> for UnifiedPath<'a> {
 
 impl<'a> IntoIterator for UnifiedPath<'a> {
     type Item = Component<'a>;
-    type IntoIter = std::vec::IntoIter<Component<'a>>;
+    type IntoIter = vec::IntoIter<Component<'a>>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.components.into_iter()
@@ -69,6 +69,7 @@ impl<'a> PurePath for UnifiedPath<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::vec;
 
     #[test]
     fn test_unified_path() {

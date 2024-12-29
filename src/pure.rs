@@ -1,4 +1,4 @@
-use crate::{Component, Components};
+use crate::{Component, Components, String, ToOwned};
 
 /// The current directory.
 const CURRENT_DIR: &str = ".";
@@ -280,9 +280,9 @@ pub trait ParsablePath {
     /// Joins the given path.
     fn join(parent: &str, child: &str) -> String {
         if Self::is_absolute(child) {
-            return child.to_string();
+            return child.to_owned();
         }
-        let mut joined = parent.to_string();
+        let mut joined = parent.to_owned();
         Self::as_dir(&mut joined);
         joined.push_str(child.as_ref());
         joined
@@ -396,7 +396,9 @@ impl<P: ParsablePath + Sized + AsRef<str> + for<'a> From<&'a str> + From<String>
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{posix::PosixPath, WindowsPath};
+    use crate::{PosixPath, Vec, WindowsPath};
+
+    #[cfg(feature = "std")]
     use std::{
         ffi::OsStr,
         path::{Path, PathBuf},

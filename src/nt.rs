@@ -1,4 +1,4 @@
-use crate::{pure::ParsablePath, PurePath};
+use crate::{pure::ParsablePath, PurePath, String, ToOwned};
 use core::ops::Div;
 
 /// A path for Windows systems.
@@ -27,7 +27,7 @@ impl From<String> for WindowsPath {
 impl<'a> From<&'a str> for WindowsPath {
     fn from(path: &'a str) -> Self {
         Self {
-            path: path.to_string(),
+            path: path.to_owned(),
         }
     }
 }
