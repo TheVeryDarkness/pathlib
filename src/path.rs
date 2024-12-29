@@ -1,5 +1,8 @@
 use crate::PurePath;
-use std::{fs::{Metadata, ReadDir}, io::Result};
+use std::{
+    fs::{Metadata, ReadDir},
+    io::Result,
+};
 
 /// A path trait.
 pub trait Path: PurePath {
