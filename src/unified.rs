@@ -109,7 +109,7 @@ mod std_impls {
 
     cfg_if::cfg_if! {
         if #[cfg(target_os = "emscripten")] {
-            impl<'a> Path for UnifiedPath<'a> {
+            impl Path for UnifiedPath<'_> {
                 fn canonicalize(&self) -> Result<Self> {
                     todo!()
                 }
@@ -135,7 +135,7 @@ mod std_impls {
                 }
             }
         } else {
-            impl<'a> Path for UnifiedPath<'a> {
+            impl Path for UnifiedPath<'_> {
                 fn canonicalize(&self) -> Result<Self> {
                     todo!()
                 }
