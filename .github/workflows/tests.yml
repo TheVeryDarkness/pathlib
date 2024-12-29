@@ -78,21 +78,21 @@ jobs:
         run: cargo clippy --workspace --all-targets
       - name: cargo doc
         run: cargo doc --workspace
-      # - name: Install cargo-llvm-cov
-      #   uses: taiki-e/install-action@cargo-llvm-cov
-      # - name: Generate Code Coverage
-      #   run: cargo llvm-cov --workspace --lcov --output-path lcov.info
-      # - name: Upload Results to Codecov
-      #   uses: codecov/codecov-action@v3
-      #   env:
-      #     RUSTUP_TOOLCHAIN: ${{ steps.toolchain.outputs.name }}
-      #   with:
-      #     file: lcov.info
-      #     flags: unittests
-      #     name: pathlib
-      #     env_vars: OS,RUSTUP_TOOLCHAIN
-      #     # Failing to upload results will cause a CI error.
-      #     # So remember to use a token.
-      #     fail_ci_if_error: true
-      #     token: ${{ secrets.CODECOV_TOKEN }}
-      #     verbose: true
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@cargo-llvm-cov
+      - name: Generate Code Coverage
+        run: cargo llvm-cov --workspace --lcov --output-path lcov.info
+      - name: Upload Results to Codecov
+        uses: codecov/codecov-action@v3
+        env:
+          RUSTUP_TOOLCHAIN: ${{ steps.toolchain.outputs.name }}
+        with:
+          file: lcov.info
+          flags: unittests
+          name: pathlib
+          env_vars: OS,RUSTUP_TOOLCHAIN
+          # Failing to upload results will cause a CI error.
+          # So remember to use a token.
+          fail_ci_if_error: true
+          token: ${{ secrets.CODECOV_TOKEN }}
+          verbose: true
