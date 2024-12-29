@@ -210,20 +210,38 @@ pub trait ParsablePath {
     }
 
     /// Returns the file stem and extension of the path.
-    fn split_extension(s: &str) -> (&str, Option<&str>) {
-        let s = Self::file_name(s).unwrap_or("");
-        match rsplit_once_with_delimiter(s, &[Self::EXTENSION_SEPARATOR]) {
-            Some((stem, _, extension)) => (stem, Some(extension)),
-            None => (s, None),
+    fn split_extension(s: &str) -> (Option<&str>, Option<&str>) {
+        if let Some(s) = Self::file_name(s) {
+            match rsplit_once_with_delimiter(s, &[Self::EXTENSION_SEPARATOR]) {
+                Some(("", _, _)) => (Some(s), None),
+                Some((stem, _, extension)) => (Some(stem), Some(extension)),
+                None => (Some(s), None),
+            }
+        } else {
+            (None, None)
         }
+    }
+
+    /// Returns the file stem of the path.
+    fn file_stem(s: &str) -> Option<&str> {
+        let (stem, _) = Self::split_extension(s);
+        stem
+    }
+
+    /// Returns the extension of the path.
+    fn extension(s: &str) -> Option<&str> {
+        let (_, ext) = Self::split_extension(s);
+        ext
     }
 
     /// Replace the extension of the path with the given extension in place.
     fn with_extension(path: &str, ext: &str) -> String {
         let (path, _) = Self::split_extension(path);
-        let mut new = path.to_owned();
-        new.push(Self::EXTENSION_SEPARATOR);
-        new.push_str(ext);
+        let mut new = path.unwrap_or("").to_owned();
+        if !ext.is_empty() {
+            new.push(Self::EXTENSION_SEPARATOR);
+            new.push_str(ext);
+        }
         new
     }
 
@@ -270,17 +288,17 @@ pub trait PurePath: Sized {
     //     Self::from(joined)
     // }
 
-    // /// Returns the extension of the path.
-    // fn extension(&self) -> Option<&str> {
-    //     let (_, ext) = Self::Parser::split_extension(self.as_ref());
-    //     ext
-    // }
-
     /// Joins the given path in place.
     fn join_in_place(&mut self, path: &Self);
 
     /// Joins the given path.
     fn join(&self, path: &Self) -> Self;
+
+    /// Returns the file stem of the path.
+    fn file_stem(&self) -> Option<&str>;
+
+    /// Returns the extension of the path.
+    fn extension(&self) -> Option<&str>;
 
     /// Returns whether the path is absolute.
     fn is_absolute(&self) -> bool;
@@ -312,6 +330,14 @@ impl<P: ParsablePath + Sized + AsRef<str> + for<'a> From<&'a str> + From<String>
     fn join(&self, path: &Self) -> Self {
         let joined = Self::join(self.as_ref(), path.as_ref());
         Self::from(joined)
+    }
+
+    fn file_stem(&self) -> Option<&str> {
+        <Self as ParsablePath>::file_stem(self.as_ref())
+    }
+
+    fn extension(&self) -> Option<&str> {
+        <Self as ParsablePath>::extension(self.as_ref())
     }
 
     fn is_absolute(&self) -> bool {

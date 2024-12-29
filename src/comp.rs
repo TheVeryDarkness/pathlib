@@ -27,6 +27,13 @@ impl Component<'_> {
             Component::Normal(s) => s,
         }
     }
+    /// Returns the component as file name.
+    pub fn as_file_name(&self) -> Option<&str> {
+        match self {
+            Component::Normal(s) => Some(s),
+            _ => None,
+        }
+    }
 }
 
 #[cfg(feature = "std")]

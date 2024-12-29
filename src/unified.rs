@@ -1,4 +1,6 @@
-use crate::{vec, Component, PurePath, Vec};
+use core::ops::Div;
+
+use crate::{Component, PurePath, Vec};
 
 /// A unified path.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
@@ -11,15 +13,6 @@ impl<'a> FromIterator<Component<'a>> for UnifiedPath<'a> {
         Self {
             components: iter.into_iter().collect(),
         }
-    }
-}
-
-impl<'a> IntoIterator for UnifiedPath<'a> {
-    type Item = Component<'a>;
-    type IntoIter = vec::IntoIter<Component<'a>>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        self.components.into_iter()
     }
 }
 
@@ -38,7 +31,7 @@ impl<'a> PurePath for UnifiedPath<'a> {
     }
 
     fn file_name(&self) -> Option<&str> {
-        self.components.last().map(|c| c.as_str())
+        self.components.last().and_then(|c| c.as_file_name())
     }
 
     fn join_in_place(&mut self, path: &Self) {
@@ -55,6 +48,14 @@ impl<'a> PurePath for UnifiedPath<'a> {
         let mut new = self.clone();
         new.join_in_place(path);
         new
+    }
+
+    fn file_stem(&self) -> Option<&str> {
+        todo!()
+    }
+
+    fn extension(&self) -> Option<&str> {
+        todo!()
     }
 
     fn is_absolute(&self) -> bool {
@@ -82,10 +83,26 @@ impl<'a> From<&'a crate::WindowsPath> for UnifiedPath<'a> {
     }
 }
 
+impl Div for UnifiedPath<'_> {
+    type Output = Self;
+
+    fn div(mut self, rhs: Self) -> Self::Output {
+        <Self as PurePath>::join_in_place(&mut self, &rhs);
+        self
+    }
+}
+
+impl<'a> Div for &UnifiedPath<'a> {
+    type Output = UnifiedPath<'a>;
+
+    fn div(self, rhs: Self) -> Self::Output {
+        <UnifiedPath<'a> as PurePath>::join(self, rhs)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::vec;
 
     #[test]
     fn test_unified_path() {

@@ -1,4 +1,7 @@
-use pathlib::{Component, Component::*, PosixPath, PurePath, WindowsPath};
+use pathlib::{
+    Component::{self, *},
+    PosixPath, PurePath, UnifiedPath, WindowsPath,
+};
 #[cfg(feature = "std")]
 use std::{
     ffi::OsStr,
@@ -66,6 +69,42 @@ fn test_split_last_component() {
                 (parent, file_name),
                 "parent() and file_name() of {path:?}",
             );
+        }
+
+        {
+            let path_actual = PathBuf::from(path);
+            let components = path_actual
+                .components()
+                .map(Component::try_from)
+                .collect::<Result<Vec<_>, _>>()
+                .unwrap();
+            let unified_path_actual = UnifiedPath::from_iter(components);
+            assert_eq!(
+                unified_path_actual.components(),
+                path_actual.components().collect::<Vec<_>>(),
+            );
+        }
+
+        {
+            let posix_path_actual = PosixPath::from(path);
+            let path_actual = UnifiedPath::from(&posix_path_actual);
+            assert_eq!(
+                path_actual.components(),
+                posix_path_actual.components().collect::<Vec<_>>(),
+            );
+            let file_name_actual = path_actual.file_name();
+            assert_eq!(file_name_actual, file_name, "file_name() of {path:?}",);
+        }
+
+        {
+            let windows_path_actual = WindowsPath::from(path);
+            let path_actual = UnifiedPath::from(&windows_path_actual);
+            assert_eq!(
+                path_actual.components(),
+                windows_path_actual.components().collect::<Vec<_>>(),
+            );
+            let file_name_actual = path_actual.file_name();
+            assert_eq!(file_name_actual, file_name, "file_name() of {path:?}",);
         }
     }
 }
@@ -187,14 +226,99 @@ fn join() {
             assert_eq!(a.join(&b), c, "{:?}.join({:?})", a, b);
             assert_eq!(&a / &b, c, "{:?}.join({:?})", a, b);
             assert_eq!(a.clone() / b.clone(), c, "{:?}.join({:?})", a, b);
+            {
+                let a = UnifiedPath::from(&a);
+                let b = UnifiedPath::from(&b);
+                let c = UnifiedPath::from(&c);
+                assert_eq!(a.join(&b), c, "{:?}.join({:?})", a, b);
+                assert_eq!(&a / &b, c, "{:?}.join({:?})", a, b);
+                assert_eq!(a.clone() / b.clone(), c, "{:?}.join({:?})", a, b);
+            }
         }
         {
             let a = WindowsPath::from(a);
             let b = WindowsPath::from(b);
-            let c = WindowsPath::from(d);
-            assert_eq!(a.join(&b), c, "{:?}.join({:?})", a, b);
-            assert_eq!(&a / &b, c, "{:?}.join({:?})", a, b);
-            assert_eq!(a.clone() / b.clone(), c, "{:?}.join({:?})", a, b);
+            let d = WindowsPath::from(d);
+            assert_eq!(a.join(&b), d, "{:?}.join({:?})", a, b);
+            assert_eq!(&a / &b, d, "{:?}.join({:?})", a, b);
+            assert_eq!(a.clone() / b.clone(), d, "{:?}.join({:?})", a, b);
+            {
+                let a = UnifiedPath::from(&a);
+                let b = UnifiedPath::from(&b);
+                let c = UnifiedPath::from(&d);
+                assert_eq!(a.join(&b), c, "{:?}.join({:?})", a, b);
+                assert_eq!(&a / &b, c, "{:?}.join({:?})", a, b);
+                assert_eq!(a.clone() / b.clone(), c, "{:?}.join({:?})", a, b);
+            }
+        }
+    }
+}
+
+/// (path, file stem, extension)
+const EXTENSION: &[(&str, Option<&str>, Option<&str>)] = &[
+    ("/foo/bar.txt", Some("bar"), Some("txt")),
+    ("/foo/bar", Some("bar"), None),
+    ("/foo/.bar", Some(".bar"), None),
+    ("/foo/.bar.txt", Some(".bar"), Some("txt")),
+    (".", None, None),
+    ("..", None, None),
+    ("/.", None, None),
+    ("/..", None, None),
+    ("foo/.", Some("foo"), None),
+    ("foo/..", None, None),
+    ("/foo/.", Some("foo"), None),
+    ("/foo/..", None, None),
+    ("./foo/.", Some("foo"), None),
+    ("./foo/..", None, None),
+    ("../foo/.", Some("foo"), None),
+    ("../foo/..", None, None),
+    ("foo", Some("foo"), None),
+    ("foo.", Some("foo"), Some("")),
+    ("foo..", Some("foo."), Some("")),
+    ("foo...", Some("foo.."), Some("")),
+    ("foo.txt", Some("foo"), Some("txt")),
+    ("foo.txt.", Some("foo.txt"), Some("")),
+    ("foo.txt..", Some("foo.txt."), Some("")),
+    ("foo.txt...", Some("foo.txt.."), Some("")),
+    ("/foo/bar.", Some("bar"), Some("")),
+    ("/foo/bar.txt.", Some("bar.txt"), Some("")),
+    ("/foo/bar.txt..", Some("bar.txt."), Some("")),
+    ("/foo/bar.txt...", Some("bar.txt.."), Some("")),
+    ("/foo/bar.txt", Some("bar"), Some("txt")),
+];
+
+#[test]
+fn extension() {
+    for &(path, stem, extension) in EXTENSION {
+        #[cfg(feature = "std")]
+        {
+            let path = PathBuf::from(path);
+            assert_eq!(
+                (
+                    path.file_stem().map(OsStr::new),
+                    path.extension().map(OsStr::new)
+                ),
+                (stem.map(OsStr::new), extension.map(OsStr::new)),
+                "file_stem() and extension() of {path:?}",
+            );
+        }
+
+        {
+            let path = PosixPath::from(path);
+            assert_eq!(
+                (path.file_stem(), path.extension()),
+                (stem, extension),
+                "file_stem() and extension() of {path:?}",
+            );
+        }
+
+        {
+            let path = WindowsPath::from(path);
+            assert_eq!(
+                (path.file_stem(), path.extension()),
+                (stem, extension),
+                "file_stem() and extension() of {path:?}",
+            );
         }
     }
 }
