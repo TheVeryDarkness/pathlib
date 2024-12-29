@@ -396,7 +396,7 @@ impl<P: ParsablePath + Sized + AsRef<str> + for<'a> From<&'a str> + From<String>
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{posix::PurePosixPath, PureWindowsPath};
+    use crate::{posix::PosixPath, WindowsPath};
     use std::{
         ffi::OsStr,
         path::{Path, PathBuf},
@@ -447,7 +447,7 @@ mod tests {
             }
 
             {
-                let path_actual = PurePosixPath::from(path);
+                let path_actual = PosixPath::from(path);
                 let (parent_actual, file_name_actual) =
                     (path_actual.parent(), path_actual.file_name());
                 assert_eq!(
@@ -458,7 +458,7 @@ mod tests {
             }
 
             {
-                let path_actual = PureWindowsPath::from(path);
+                let path_actual = WindowsPath::from(path);
                 let (parent_actual, file_name_actual) =
                     (path_actual.parent(), path_actual.file_name());
                 assert_eq!(
@@ -524,7 +524,7 @@ mod tests {
             }
 
             {
-                let path_actual = PurePosixPath::from(path);
+                let path_actual = PosixPath::from(path);
                 let components_actual: Vec<_> = path_actual.components().collect();
                 assert_eq!(components_actual, components, "components() of {path:?}");
                 let components_actual: Vec<_> = path_actual
@@ -541,7 +541,7 @@ mod tests {
             }
 
             {
-                let path_actual = PureWindowsPath::from(path);
+                let path_actual = WindowsPath::from(path);
                 let components_actual: Vec<_> = path_actual.components().collect();
                 assert_eq!(components_actual, components, "components() of {path:?}");
                 let components_actual: Vec<_> = path_actual
@@ -574,9 +574,9 @@ mod tests {
     #[test]
     fn join() {
         for &(a, b, c) in JOIN {
-            let a = PurePosixPath::from(a);
-            let b = PurePosixPath::from(b);
-            let c = PurePosixPath::from(c);
+            let a = PosixPath::from(a);
+            let b = PosixPath::from(b);
+            let c = PosixPath::from(c);
             assert_eq!(a.join(&b), c, "{:?}.join({:?})", a, b);
         }
     }

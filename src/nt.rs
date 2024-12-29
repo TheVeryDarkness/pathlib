@@ -1,13 +1,13 @@
 use crate::{pure::ParsablePath, PurePath};
 use core::ops::Div;
 
-/// A pure path for Windows systems.
+/// A path for Windows systems.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct PureWindowsPath {
+pub struct WindowsPath {
     path: String,
 }
 
-impl ParsablePath for PureWindowsPath {
+impl ParsablePath for WindowsPath {
     const PRIMARY_COMPONENT_SEPARATOR: char = '\\';
     const SECONDARY_COMPONENT_SEPARATOR: Option<char> = Some('/');
     const EXTENSION_SEPARATOR: char = '.';
@@ -18,13 +18,13 @@ impl ParsablePath for PureWindowsPath {
     }
 }
 
-impl From<String> for PureWindowsPath {
+impl From<String> for WindowsPath {
     fn from(path: String) -> Self {
         Self { path }
     }
 }
 
-impl<'a> From<&'a str> for PureWindowsPath {
+impl<'a> From<&'a str> for WindowsPath {
     fn from(path: &'a str) -> Self {
         Self {
             path: path.to_string(),
@@ -32,13 +32,13 @@ impl<'a> From<&'a str> for PureWindowsPath {
     }
 }
 
-impl AsRef<str> for PureWindowsPath {
+impl AsRef<str> for WindowsPath {
     fn as_ref(&self) -> &str {
         &self.path
     }
 }
 
-impl Div for PureWindowsPath {
+impl Div for WindowsPath {
     type Output = Self;
 
     fn div(self, rhs: Self) -> Self::Output {

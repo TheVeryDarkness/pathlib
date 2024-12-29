@@ -36,9 +36,9 @@ mod pure;
 mod unified;
 
 pub use comp::{Component, Components};
-pub use nt::PureWindowsPath;
+pub use nt::WindowsPath;
 #[cfg(feature = "std")]
 pub use path::Path;
-pub use posix::PurePosixPath;
+pub use posix::PosixPath;
 pub use pure::{ParsablePath, PurePath};
 pub use unified::UnifiedPath;
