@@ -12,7 +12,12 @@ rust-version = "1.79"
 
 [dependencies]
 cfg-if = "1.0.0"
+emscripten-functions = { version = "0.2.3", optional = true }
 
 [features]
 default = ["std"]
 std = []
+emscripten-functions = ["dep:emscripten-functions"]
+
+[target.'cfg(target_os = "emscripten")'.dependencies.emscripten-functions]
+version = "0.2.3"
