@@ -65,10 +65,10 @@ pub trait ParsablePath {
 
     /// Returns the first component of the path and the rest of the path.
     #[inline]
-    fn split_first_component<'i>(
-        mut s: &'i str,
+    fn split_first_component(
+        mut s: &str,
         progressed: bool,
-    ) -> (Option<Component<'i>>, Option<&'i str>) {
+    ) -> (Option<Component<'_>>, Option<&str>) {
         loop {
             match Self::split_first_lexical(s) {
                 (CURRENT_DIR, Some((_, suffix))) => match progressed {

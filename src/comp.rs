@@ -16,7 +16,7 @@ pub enum Component<'a> {
     Normal(&'a str),
 }
 
-impl<'a> Component<'a> {
+impl Component<'_> {
     /// Returns the component as a string.
     pub fn as_str(&self) -> &str {
         match self {
@@ -101,7 +101,7 @@ impl<'a, P: ParsablePath> Iterator for Components<'a, P> {
     }
 }
 
-impl<'a, P: ParsablePath> DoubleEndedIterator for Components<'a, P> {
+impl<P: ParsablePath> DoubleEndedIterator for Components<'_, P> {
     fn next_back(&mut self) -> Option<Self::Item> {
         let (rest, last) = P::split_last_component(self.s, self.progressed_back);
         self.progressed_back = true;
