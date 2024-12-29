@@ -263,6 +263,11 @@ pub trait ParsablePath {
         path.starts_with(Self::COMPONENT_SEPARATORS)
     }
 
+    /// Returns whether the path is relative.
+    fn is_relative(path: &str) -> bool {
+        !Self::is_absolute(path)
+    }
+
     /// Append component separator if not already present.
     fn as_dir(path: &mut String) {
         if !path.ends_with(Self::COMPONENT_SEPARATORS) {
@@ -302,6 +307,11 @@ pub trait PurePath: Sized {
 
     /// Returns whether the path is absolute.
     fn is_absolute(&self) -> bool;
+
+    /// Returns whether the path is relative.
+    fn is_relative(&self) -> bool {
+        !self.is_absolute()
+    }
 
     /// Returns the components of the path.
     fn components(&self) -> impl DoubleEndedIterator<Item = Component<'_>>;
