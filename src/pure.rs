@@ -221,7 +221,7 @@ pub trait ParsablePath {
     /// Replace the extension of the path with the given extension in place.
     fn with_extension(path: &str, ext: &str) -> String {
         let (path, _) = Self::split_extension(path);
-        let mut new = path.to_string();
+        let mut new = path.to_owned();
         new.push(Self::EXTENSION_SEPARATOR);
         new.push_str(ext);
         new
