@@ -5,11 +5,13 @@ description = "A simple path library"
 license = "MIT"
 keywords = ["path", "pathlib"]
 categories = ["filesystem"]
+readme = "README.md"
 repository = "https://github.com/TheVeryDarkness/pathlib"
 edition = "2021"
 rust-version = "1.79"
 
 [dependencies]
+cfg-if = "1.0.0"
 
 [features]
 default = ["std"]
