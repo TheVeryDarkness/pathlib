@@ -324,8 +324,13 @@ fn extension() {
 fn fs() {
     #[cfg(feature = "std")]
     {
-        fs::create_dir("./tmp").unwrap();
         let dir = PathBuf::from("./tmp");
+        if let Ok(metadata) = fs::metadata(&dir) {
+            if metadata.is_dir() {
+                fs::remove_dir(&dir).unwrap();
+            }
+        }
+        fs::create_dir(&dir).unwrap();
         assert!(dir.exists());
         let metadata = dir.metadata().unwrap();
         assert!(metadata.is_dir());
