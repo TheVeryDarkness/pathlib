@@ -321,6 +321,7 @@ fn extension() {
 }
 
 #[test]
+#[cfg_attr(miri, ignore)]
 fn fs() {
     #[cfg(feature = "std")]
     {
