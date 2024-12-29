@@ -372,6 +372,7 @@ fn fs() {
         assert!(files.iter().any(|entry| entry.path() == file_1));
         assert!(files.iter().any(|entry| entry.path() == file_2));
 
+        fs::remove_file(file_2).unwrap();
         fs::remove_file(file_1).unwrap();
 
         fs::remove_dir(dir).unwrap();
