@@ -41,7 +41,16 @@ impl AsRef<str> for PosixPath {
 impl Div for PosixPath {
     type Output = Self;
 
+    fn div(mut self, rhs: Self) -> Self::Output {
+        <Self as PurePath>::join_in_place(&mut self, &rhs);
+        self
+    }
+}
+
+impl Div for &PosixPath {
+    type Output = PosixPath;
+
     fn div(self, rhs: Self) -> Self::Output {
-        <Self as PurePath>::join(&self, &rhs)
+        <PosixPath as PurePath>::join(self, rhs)
     }
 }

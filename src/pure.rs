@@ -312,12 +312,12 @@ pub trait ParsablePath {
 
     /// Returns whether the path is absolute.
     fn is_absolute(path: &str) -> bool {
-        path.starts_with(Self::PRIMARY_COMPONENT_SEPARATOR)
+        path.starts_with(Self::COMPONENT_SEPARATORS)
     }
 
     /// Append component separator if not already present.
     fn as_dir(path: &mut String) {
-        if !path.ends_with(Self::PRIMARY_COMPONENT_SEPARATOR) {
+        if !path.ends_with(Self::COMPONENT_SEPARATORS) {
             path.push(Self::PRIMARY_COMPONENT_SEPARATOR);
         }
     }
@@ -490,6 +490,7 @@ mod tests {
         (".", &[CurDir]),
         ("..", &[ParentDir]),
         ("/.", &[Root]),
+        ("/./.", &[Root]),
         ("/..", &[Root, ParentDir]),
         ("./..", &[CurDir, ParentDir]),
         ("../..", &[ParentDir, ParentDir]),
@@ -559,25 +560,44 @@ mod tests {
         }
     }
 
-    const JOIN: &[(&str, &str, &str)] = &[
-        ("/foo", "bar", "/foo/bar"),
-        ("/foo", "/bar", "/bar"),
-        ("/foo/", "bar", "/foo/bar"),
-        ("/foo/", "/bar", "/bar"),
-        ("/foo", "/bar/", "/bar/"),
-        ("/foo/", "/bar/", "/bar/"),
-        ("/foo/", "/bar/baz", "/bar/baz"),
-        ("/foo/", "bar/baz", "/foo/bar/baz"),
-        ("/foo/", "bar/baz/", "/foo/bar/baz/"),
-        ("/foo/", "/bar/baz/", "/bar/baz/"),
+    const JOIN: &[(&str, &str, &str, &str)] = &[
+        ("/foo", "bar", "/foo/bar", "/foo\\bar"),
+        ("/foo", "/bar", "/bar", "/bar"),
+        ("/foo/", "bar", "/foo/bar", "/foo/bar"),
+        ("/foo/", "/bar", "/bar", "/bar"),
+        ("/foo", "/bar/", "/bar/", "/bar/"),
+        ("/foo/", "/bar/", "/bar/", "/bar/"),
+        ("/foo/", "/bar/baz", "/bar/baz", "/bar/baz"),
+        ("/foo/", "bar/baz", "/foo/bar/baz", "/foo/bar/baz"),
+        ("/foo/", "bar/baz/", "/foo/bar/baz/", "/foo/bar/baz/"),
+        ("/foo/", "/bar/baz/", "/bar/baz/", "/bar/baz/"),
     ];
     #[test]
     fn join() {
-        for &(a, b, c) in JOIN {
-            let a = PosixPath::from(a);
-            let b = PosixPath::from(b);
-            let c = PosixPath::from(c);
-            assert_eq!(a.join(&b), c, "{:?}.join({:?})", a, b);
+        for &(a, b, c, d) in JOIN {
+            #[cfg(feature = "std")]
+            {
+                let a = PathBuf::from(a);
+                let b = PathBuf::from(b);
+                let c = PathBuf::from(c);
+                assert_eq!(a.join(&b), c, "{:?}.join({:?})", a, b);
+            }
+            {
+                let a = PosixPath::from(a);
+                let b = PosixPath::from(b);
+                let c = PosixPath::from(c);
+                assert_eq!(a.join(&b), c, "{:?}.join({:?})", a, b);
+                assert_eq!(&a / &b, c, "{:?}.join({:?})", a, b);
+                assert_eq!(a.clone() / b.clone(), c, "{:?}.join({:?})", a, b);
+            }
+            {
+                let a = WindowsPath::from(a);
+                let b = WindowsPath::from(b);
+                let c = WindowsPath::from(d);
+                assert_eq!(a.join(&b), c, "{:?}.join({:?})", a, b);
+                assert_eq!(&a / &b, c, "{:?}.join({:?})", a, b);
+                assert_eq!(a.clone() / b.clone(), c, "{:?}.join({:?})", a, b);
+            }
         }
     }
 }

@@ -41,7 +41,16 @@ impl AsRef<str> for WindowsPath {
 impl Div for WindowsPath {
     type Output = Self;
 
+    fn div(mut self, rhs: Self) -> Self::Output {
+        <Self as PurePath>::join_in_place(&mut self, &rhs);
+        self
+    }
+}
+
+impl Div for &WindowsPath {
+    type Output = WindowsPath;
+
     fn div(self, rhs: Self) -> Self::Output {
-        <Self as PurePath>::join(&self, &rhs)
+        <WindowsPath as PurePath>::join(self, rhs)
     }
 }
