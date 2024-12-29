@@ -327,9 +327,12 @@ fn fs() {
     {
         let dir = PathBuf::from("./tmp");
         if let Ok(metadata) = fs::metadata(&dir) {
+            eprintln!("Metadata of {:?} is {:?}", dir, metadata);
             if metadata.is_dir() {
                 fs::remove_dir(&dir).unwrap();
             }
+        } else {
+            eprintln!("No metadata for {:?}", dir);
         }
         fs::create_dir(&dir).unwrap();
         assert!(dir.exists());
