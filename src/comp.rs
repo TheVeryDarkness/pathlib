@@ -2,7 +2,7 @@ use crate::ParsablePath;
 use core::marker::PhantomData;
 
 /// A path component.
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Component<'a> {
     /// A path prefix.
     Prefix(&'a str),
@@ -17,16 +17,6 @@ pub enum Component<'a> {
 }
 
 impl Component<'_> {
-    /// Returns the component as a string.
-    pub fn as_str(&self) -> &str {
-        match self {
-            Component::Prefix(s) => s,
-            Component::Root => "/",
-            Component::CurDir => ".",
-            Component::ParentDir => "..",
-            Component::Normal(s) => s,
-        }
-    }
     /// Returns the component as file name.
     pub fn as_file_name(&self) -> Option<&str> {
         match self {

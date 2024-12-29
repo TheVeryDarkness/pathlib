@@ -1,6 +1,5 @@
-use core::ops::Div;
-
 use crate::{Component, PurePath, Vec};
+use core::ops::Div;
 
 /// A unified path.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
@@ -97,6 +96,71 @@ impl<'a> Div for &UnifiedPath<'a> {
 
     fn div(self, rhs: Self) -> Self::Output {
         <UnifiedPath<'a> as PurePath>::join(self, rhs)
+    }
+}
+
+#[cfg(feature = "std")]
+mod std_impls {
+    use crate::{Path, UnifiedPath};
+    use std::{
+        fs::{Metadata, ReadDir},
+        io::Result,
+    };
+
+    cfg_if::cfg_if! {
+        if #[cfg(target_os = "emscripten")] {
+            impl<'a> Path for UnifiedPath<'a> {
+                fn canonicalize(&self) -> Result<Self> {
+                    todo!()
+                }
+
+                fn try_exists(&self) -> Result<bool> {
+                    todo!()
+                }
+
+                fn metadata(&self) -> Result<Metadata> {
+                    todo!()
+                }
+
+                fn read_dir(&self) -> Result<ReadDir> {
+                    todo!()
+                }
+
+                fn read_link(&self) -> Result<Self> {
+                    todo!()
+                }
+
+                fn symlink_metadata(&self) -> Result<Metadata> {
+                    todo!()
+                }
+            }
+        } else {
+            impl<'a> Path for UnifiedPath<'a> {
+                fn canonicalize(&self) -> Result<Self> {
+                    todo!()
+                }
+
+                fn try_exists(&self) -> Result<bool> {
+                    todo!()
+                }
+
+                fn metadata(&self) -> Result<Metadata> {
+                    todo!()
+                }
+
+                fn read_dir(&self) -> Result<ReadDir> {
+                    todo!()
+                }
+
+                fn read_link(&self) -> Result<Self> {
+                    todo!()
+                }
+
+                fn symlink_metadata(&self) -> Result<Metadata> {
+                    todo!()
+                }
+            }
+        }
     }
 }
 

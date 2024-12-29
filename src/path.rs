@@ -1,5 +1,5 @@
 use crate::PurePath;
-use std::{fs::Metadata, io::Result};
+use std::{fs::{Metadata, ReadDir}, io::Result};
 
 /// A path trait.
 pub trait Path: PurePath {
@@ -25,7 +25,7 @@ pub trait Path: PurePath {
     fn metadata(&self) -> Result<Metadata>;
 
     /// Returns the directory entries.
-    fn read_dir(&self) -> Result<impl Iterator<Item = Result<Self>>>;
+    fn read_dir(&self) -> Result<ReadDir>;
 
     /// Reads the symlink.
     fn read_link(&self) -> Result<Self>;
