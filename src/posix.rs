@@ -1,16 +1,5 @@
-use crate::{pure::PathParser, PurePath};
-use std::ops::Add;
-
-/// A path parser for Posix systems.
-pub struct PosixParser;
-
-impl PathParser for PosixParser {
-    const PRIMARY_COMPONENT_SEPARATOR: char = '/';
-    const SECONDARY_COMPONENT_SEPARATOR: Option<char> = None;
-    const EXTENSION_SEPARATOR: char = '.';
-    const DRIVE_SEPARATOR: Option<char> = None;
-    const ESCAPE_CHAR: char = '\\';
-}
+use crate::{pure::ParsablePath, PurePath};
+use core::ops::Div;
 
 /// A pure path for Posix systems.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
@@ -18,8 +7,12 @@ pub struct PurePosixPath {
     path: String,
 }
 
-impl PurePath for PurePosixPath {
-    type Parser = PosixParser;
+impl ParsablePath for PurePosixPath {
+    const PRIMARY_COMPONENT_SEPARATOR: char = '/';
+    const SECONDARY_COMPONENT_SEPARATOR: Option<char> = None;
+    const EXTENSION_SEPARATOR: char = '.';
+    const DRIVE_SEPARATOR: Option<char> = None;
+
     fn as_string_mut(&mut self) -> &mut String {
         &mut self.path
     }
@@ -45,10 +38,10 @@ impl AsRef<str> for PurePosixPath {
     }
 }
 
-impl Add for PurePosixPath {
+impl Div for PurePosixPath {
     type Output = Self;
 
-    fn add(self, rhs: Self) -> Self::Output {
+    fn div(self, rhs: Self) -> Self::Output {
         <Self as PurePath>::join(&self, &rhs)
     }
 }

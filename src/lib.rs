@@ -27,14 +27,16 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 //! A simple path manipulation library.
 
+mod comp;
 mod nt;
 #[cfg(feature = "std")]
 mod path;
 mod posix;
 mod pure;
 
-pub use nt::{PureWindowsPath, WindowsParser};
+pub use comp::{Component, Components};
+pub use nt::PureWindowsPath;
 #[cfg(feature = "std")]
 pub use path::Path;
 pub use posix::PurePosixPath;
-pub use pure::{PathParser, PurePath};
+pub use pure::{ParsablePath, PurePath};
