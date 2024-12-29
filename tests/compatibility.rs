@@ -49,6 +49,16 @@ fn test_split_last_component() {
                 (parent.map(Path::new), file_name.map(OsStr::new)),
                 "parent() and file_name() of {path:?}",
             );
+            let components = path_actual
+                .components()
+                .map(Component::try_from)
+                .collect::<Result<Vec<_>, _>>()
+                .unwrap();
+            let unified_path_actual = UnifiedPath::from_iter(components);
+            assert_eq!(
+                unified_path_actual.components(),
+                path_actual.components().collect::<Vec<_>>(),
+            );
         }
 
         {
@@ -68,20 +78,6 @@ fn test_split_last_component() {
                 (parent_actual.as_ref().map(AsRef::as_ref), file_name_actual),
                 (parent, file_name),
                 "parent() and file_name() of {path:?}",
-            );
-        }
-
-        {
-            let path_actual = PathBuf::from(path);
-            let components = path_actual
-                .components()
-                .map(Component::try_from)
-                .collect::<Result<Vec<_>, _>>()
-                .unwrap();
-            let unified_path_actual = UnifiedPath::from_iter(components);
-            assert_eq!(
-                unified_path_actual.components(),
-                path_actual.components().collect::<Vec<_>>(),
             );
         }
 

@@ -39,9 +39,10 @@ mod pure;
 mod unified;
 
 #[cfg(not(feature = "std"))]
-use alloc::{borrow::ToOwned, string::String, vec, vec::Vec};
+use alloc::{borrow::ToOwned, string::String, vec};
 #[cfg(feature = "std")]
-use std::{borrow::ToOwned, string::String, vec::Vec};
+use std::{borrow::ToOwned, string::String, vec};
+use vec::Vec;
 
 pub use comp::{Component, Components};
 pub use nt::WindowsPath;

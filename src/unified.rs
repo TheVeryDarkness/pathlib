@@ -167,6 +167,7 @@ mod std_impls {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::vec;
 
     #[test]
     fn test_unified_path() {
