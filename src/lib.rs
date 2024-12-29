@@ -33,6 +33,7 @@ mod nt;
 mod path;
 mod posix;
 mod pure;
+mod unified;
 
 pub use comp::{Component, Components};
 pub use nt::PureWindowsPath;
@@ -40,3 +41,4 @@ pub use nt::PureWindowsPath;
 pub use path::Path;
 pub use posix::PurePosixPath;
 pub use pure::{ParsablePath, PurePath};
+pub use unified::UnifiedPath;
