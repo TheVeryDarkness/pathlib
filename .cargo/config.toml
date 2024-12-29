@@ -1,2 +1,22 @@
 [env]
-RUST_BACKTRACE="1"
+RUST_BACKTRACE = "1"
+
+# https://blog.therocode.net/2020/10/a-guide-to-rust-sdl2-emscripten
+# https://emscripten.org/docs/api_reference/Filesystem-API.html#filesystem-api-nodefs
+
+[target.wasm32-unknown-emscripten]
+runner = "node"
+rustflags = [
+  "-C",
+  "link-arg=-lnodefs.js",
+  "-C",
+  "link-arg=-lnoderawfs.js",
+  "-C",
+  "link-arg=-sSTACK_SIZE=64MB",
+  "-C",
+  "link-arg=-sINITIAL_MEMORY=128MB",
+  "-C",
+  "link-arg=-sALLOW_MEMORY_GROWTH",
+  "-C",
+  "link-arg=-sEXIT_RUNTIME=1",
+]
