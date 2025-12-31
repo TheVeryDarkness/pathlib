@@ -1,5 +1,7 @@
-use crate::{pure::ParsablePath, Component, PosixPath, PurePath, String, ToOwned, WindowsPath};
 use std::ops::Div;
+
+use crate::pure::ParsablePath;
+use crate::{Component, PosixPath, PurePath, String, ToOwned, WindowsPath};
 
 /// A path for Posix systems.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]

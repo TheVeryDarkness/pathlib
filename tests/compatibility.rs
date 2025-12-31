@@ -1,12 +1,11 @@
-use pathlib::{
-    Component::{self, *},
-    PosixPath, PurePath, UnifiedPath, WindowsPath,
-};
 #[cfg(feature = "std")]
 use std::{
     ffi::OsStr,
     path::{Path, PathBuf},
 };
+
+use pathlib::Component::{self, *};
+use pathlib::{PosixPath, PurePath, UnifiedPath, WindowsPath};
 
 const PARENT_AND_FILE_NAME: &[(&str, Option<&str>, Option<&str>)] = &[
     ("/foo/bar", Some("/foo"), Some("bar")),
@@ -321,7 +320,8 @@ fn extension() {
 }
 
 mod fs_ {
-    use std::{fs, path::PathBuf};
+    use std::fs;
+    use std::path::PathBuf;
 
     #[test]
     #[cfg(feature = "std")]

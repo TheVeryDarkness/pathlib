@@ -1,5 +1,7 @@
-use crate::{pure::ParsablePath, PurePath, String, ToOwned};
 use core::ops::Div;
+
+use crate::pure::ParsablePath;
+use crate::{PurePath, String, ToOwned};
 
 /// A path for Windows systems.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]

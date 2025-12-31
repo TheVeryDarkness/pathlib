@@ -1,5 +1,6 @@
-use crate::pure::ParsablePath;
 use core::marker::PhantomData;
+
+use crate::pure::ParsablePath;
 
 /// A path component.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -28,8 +29,9 @@ impl Component<'_> {
 
 #[cfg(feature = "std")]
 mod std_impls {
-    use super::*;
     use std::path::Component as StdComponent;
+
+    use super::*;
 
     impl<'a> TryFrom<StdComponent<'a>> for Component<'a> {
         type Error = ();
