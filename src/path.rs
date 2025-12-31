@@ -1,4 +1,5 @@
 use crate::PurePath;
+use std::path::Path as StdPath;
 use std::{
     fs::{Metadata, ReadDir},
     io::Result,
@@ -53,4 +54,51 @@ pub trait Path: PurePath {
 
     // /// Writes the file.
     // fn write_file(&self, data: &[u8]);
+}
+
+impl<P: PurePath + AsRef<str> + for<'a> From<&'a str>> Path for P
+where
+    Self: Sized,
+{
+    fn canonicalize(&self) -> Result<Self> {
+        let std_path = StdPath::new(self.as_ref());
+        let canonical_path = std_path.canonicalize()?;
+        Ok(Self::from(canonical_path.to_str().ok_or_else(|| {
+            std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                "Failed to convert path to string",
+            )
+        })?))
+    }
+
+    fn try_exists(&self) -> Result<bool> {
+        let std_path = StdPath::new(self.as_ref());
+        Ok(std_path.exists())
+    }
+
+    fn metadata(&self) -> Result<Metadata> {
+        let std_path = StdPath::new(self.as_ref());
+        std_path.metadata()
+    }
+
+    fn read_dir(&self) -> Result<ReadDir> {
+        let std_path = StdPath::new(self.as_ref());
+        std_path.read_dir()
+    }
+
+    fn read_link(&self) -> Result<Self> {
+        let std_path = StdPath::new(self.as_ref());
+        let target_path = std_path.read_link()?;
+        Ok(Self::from(target_path.to_str().ok_or_else(|| {
+            std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                "Failed to convert path to string",
+            )
+        })?))
+    }
+
+    fn symlink_metadata(&self) -> Result<Metadata> {
+        let std_path = StdPath::new(self.as_ref());
+        std_path.symlink_metadata()
+    }
 }

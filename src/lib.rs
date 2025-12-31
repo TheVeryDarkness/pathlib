@@ -41,15 +41,14 @@ mod pure;
 mod unified;
 
 #[cfg(not(feature = "std"))]
-use alloc::{borrow::ToOwned, string::String, vec};
+use alloc::{borrow::ToOwned, string::String};
 #[cfg(feature = "std")]
-use std::{borrow::ToOwned, string::String, vec};
-use vec::Vec;
+use std::{borrow::ToOwned, string::String};
 
 pub use comp::{Component, Components};
 pub use nt::WindowsPath;
 #[cfg(feature = "std")]
 pub use path::Path;
 pub use posix::PosixPath;
-pub use pure::{ParsablePath, PurePath};
+pub use pure::PurePath;
 pub use unified::UnifiedPath;

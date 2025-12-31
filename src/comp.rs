@@ -1,4 +1,4 @@
-use crate::ParsablePath;
+use crate::pure::ParsablePath;
 use core::marker::PhantomData;
 
 /// A path component.
@@ -68,14 +68,14 @@ mod std_impls {
 }
 
 /// An iterator over the [Component]s of a path.
-pub struct Components<'a, P: ParsablePath> {
+pub struct Components<'a, P> {
     s: &'a str,
     p: PhantomData<P>,
     progressed_front: bool,
     progressed_back: bool,
 }
 
-impl<'a, P: ParsablePath> Components<'a, P> {
+impl<'a, P> Components<'a, P> {
     /// Creates a new [Components] iterator.
     pub fn new(s: &'a str) -> Self {
         Self {

@@ -30,7 +30,7 @@ fn split_once_with_delimiter<'i>(
 }
 
 /// A path parser.
-pub trait ParsablePath {
+pub(crate) trait ParsablePath {
     /// The primary component separator.
     ///
     /// For example, `'/'` on Posix systems and `'\\'` on Windows.
@@ -50,6 +50,10 @@ pub trait ParsablePath {
     const EXTENSION_SEPARATOR: char;
     /// The drive separator.
     const DRIVE_SEPARATOR: Option<char>;
+    /// The current directory.
+    const CURRENT_DIR: &'static str;
+    /// The parent directory.
+    const PARENT_DIR: &'static str;
 
     /// Returns a mutable reference to the path as a string.
     fn as_string_mut(&mut self) -> &mut String;
@@ -246,6 +250,7 @@ pub trait ParsablePath {
     }
 
     /// Returns the driver of the path and the rest of the path.
+    #[expect(dead_code, reason = "reserved for future use")]
     fn split_driver(path: &str) -> (Option<&str>, &str) {
         if let Some(c) = Self::DRIVE_SEPARATOR {
             if let Some((drive, rest)) = path.split_once(c) {
@@ -264,6 +269,7 @@ pub trait ParsablePath {
     }
 
     /// Returns whether the path is relative.
+    #[expect(dead_code, reason = "reserved for future use")]
     fn is_relative(path: &str) -> bool {
         !Self::is_absolute(path)
     }
@@ -304,6 +310,9 @@ pub trait PurePath: Sized {
 
     /// Returns the extension of the path.
     fn extension(&self) -> Option<&str>;
+
+    /// Replace the extension of the path with the given extension.
+    fn with_extension(&mut self, ext: &str) -> Self;
 
     /// Returns whether the path is absolute.
     fn is_absolute(&self) -> bool;
@@ -348,6 +357,11 @@ impl<P: ParsablePath + Sized + AsRef<str> + for<'a> From<&'a str> + From<String>
 
     fn extension(&self) -> Option<&str> {
         <Self as ParsablePath>::extension(self.as_ref())
+    }
+
+    fn with_extension(&mut self, ext: &str) -> Self {
+        let new = <Self as ParsablePath>::with_extension(self.as_ref(), ext);
+        Self::from(new)
     }
 
     fn is_absolute(&self) -> bool {

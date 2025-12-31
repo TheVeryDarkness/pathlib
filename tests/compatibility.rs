@@ -56,8 +56,9 @@ fn test_split_last_component() {
                 .unwrap();
             let unified_path_actual = UnifiedPath::from_iter(components);
             assert_eq!(
-                unified_path_actual.components(),
+                unified_path_actual.components().collect::<Vec<_>>(),
                 path_actual.components().collect::<Vec<_>>(),
+                "components() of {path:?} ({unified_path_actual:?} vs {path_actual:?})",
             );
         }
 
@@ -83,9 +84,9 @@ fn test_split_last_component() {
 
         {
             let posix_path_actual = PosixPath::from(path);
-            let path_actual = UnifiedPath::from(&posix_path_actual);
+            let path_actual = UnifiedPath::from(posix_path_actual.clone());
             assert_eq!(
-                path_actual.components(),
+                path_actual.components().collect::<Vec<_>>(),
                 posix_path_actual.components().collect::<Vec<_>>(),
             );
             let file_name_actual = path_actual.file_name();
@@ -94,9 +95,9 @@ fn test_split_last_component() {
 
         {
             let windows_path_actual = WindowsPath::from(path);
-            let path_actual = UnifiedPath::from(&windows_path_actual);
+            let path_actual = UnifiedPath::from(windows_path_actual.clone());
             assert_eq!(
-                path_actual.components(),
+                path_actual.components().collect::<Vec<_>>(),
                 windows_path_actual.components().collect::<Vec<_>>(),
             );
             let file_name_actual = path_actual.file_name();
@@ -223,9 +224,9 @@ fn join() {
             assert_eq!(&a / &b, c, "{:?}.join({:?})", a, b);
             assert_eq!(a.clone() / b.clone(), c, "{:?}.join({:?})", a, b);
             {
-                let a = UnifiedPath::from(&a);
-                let b = UnifiedPath::from(&b);
-                let c = UnifiedPath::from(&c);
+                let a = UnifiedPath::from(a.clone());
+                let b = UnifiedPath::from(b.clone());
+                let c = UnifiedPath::from(c.clone());
                 assert_eq!(a.join(&b), c, "{:?}.join({:?})", a, b);
                 assert_eq!(&a / &b, c, "{:?}.join({:?})", a, b);
                 assert_eq!(a.clone() / b.clone(), c, "{:?}.join({:?})", a, b);
@@ -239,9 +240,9 @@ fn join() {
             assert_eq!(&a / &b, d, "{:?}.join({:?})", a, b);
             assert_eq!(a.clone() / b.clone(), d, "{:?}.join({:?})", a, b);
             {
-                let a = UnifiedPath::from(&a);
-                let b = UnifiedPath::from(&b);
-                let c = UnifiedPath::from(&d);
+                let a = UnifiedPath::from(a.clone());
+                let b = UnifiedPath::from(b.clone());
+                let c = UnifiedPath::from(d.clone());
                 assert_eq!(a.join(&b), c, "{:?}.join({:?})", a, b);
                 assert_eq!(&a / &b, c, "{:?}.join({:?})", a, b);
                 assert_eq!(a.clone() / b.clone(), c, "{:?}.join({:?})", a, b);
@@ -325,8 +326,6 @@ mod fs_ {
     #[test]
     #[cfg(feature = "std")]
     #[cfg_attr(miri, ignore)]
-    // Cannot get metadata correctly.
-    #[cfg_attr(target_os = "emscripten", should_panic = "assertion failed")]
     fn std() {
         let dir = PathBuf::from("./tmp");
         if let Ok(metadata) = fs::metadata(&dir) {
@@ -398,11 +397,6 @@ mod is_file {
     #[test]
     #[cfg(feature = "std")]
     #[cfg_attr(miri, ignore)]
-    // Cannot get metadata correctly.
-    #[cfg_attr(
-        target_os = "emscripten",
-        should_panic = "assertion `left == right` failed"
-    )]
     fn std() {
         let path = PathBuf::from("./Cargo.toml");
         assert_eq!(path.is_file(), true);
@@ -427,7 +421,7 @@ mod is_file {
     #[cfg_attr(miri, ignore)]
     fn unified() {
         let path = PosixPath::from("./Cargo.toml");
-        let path = UnifiedPath::from(&path);
+        let path = UnifiedPath::from(path);
         assert_eq!(path.is_file(), true);
         assert_eq!(path.is_dir(), false);
         assert_eq!(path.is_symlink(), false);
@@ -437,7 +431,7 @@ mod is_file {
         assert_eq!(metadata.is_symlink(), false);
 
         let path = PosixPath::from("./src");
-        let path = UnifiedPath::from(&path);
+        let path = UnifiedPath::from(path);
         assert_eq!(path.is_file(), false);
         assert_eq!(path.is_dir(), true);
         assert_eq!(path.is_symlink(), false);

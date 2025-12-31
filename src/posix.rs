@@ -12,6 +12,8 @@ impl ParsablePath for PosixPath {
     const SECONDARY_COMPONENT_SEPARATOR: Option<char> = None;
     const EXTENSION_SEPARATOR: char = '.';
     const DRIVE_SEPARATOR: Option<char> = None;
+    const CURRENT_DIR: &'static str = ".";
+    const PARENT_DIR: &'static str = "..";
 
     fn as_string_mut(&mut self) -> &mut String {
         &mut self.path

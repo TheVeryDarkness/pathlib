@@ -12,6 +12,8 @@ impl ParsablePath for WindowsPath {
     const SECONDARY_COMPONENT_SEPARATOR: Option<char> = Some('/');
     const EXTENSION_SEPARATOR: char = '.';
     const DRIVE_SEPARATOR: Option<char> = Some(':');
+    const CURRENT_DIR: &'static str = ".";
+    const PARENT_DIR: &'static str = "..";
 
     fn as_string_mut(&mut self) -> &mut String {
         &mut self.path

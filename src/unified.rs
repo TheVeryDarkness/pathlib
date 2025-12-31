@@ -1,88 +1,98 @@
-use crate::{Component, PurePath, Vec};
-use core::ops::Div;
+use crate::{pure::ParsablePath, Component, PosixPath, PurePath, String, ToOwned, WindowsPath};
+use std::ops::Div;
 
-/// A unified path.
+/// A path for Posix systems.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct UnifiedPath<'a> {
-    components: Vec<Component<'a>>,
+pub struct UnifiedPath {
+    path: String,
 }
 
-impl<'a> FromIterator<Component<'a>> for UnifiedPath<'a> {
-    fn from_iter<I: IntoIterator<Item = Component<'a>>>(iter: I) -> Self {
+impl ParsablePath for UnifiedPath {
+    const PRIMARY_COMPONENT_SEPARATOR: char = '/';
+    const SECONDARY_COMPONENT_SEPARATOR: Option<char> = None;
+    const EXTENSION_SEPARATOR: char = '.';
+    const DRIVE_SEPARATOR: Option<char> = Some(':');
+    const CURRENT_DIR: &'static str = ".";
+    const PARENT_DIR: &'static str = "..";
+
+    fn as_string_mut(&mut self) -> &mut String {
+        &mut self.path
+    }
+}
+
+impl From<String> for UnifiedPath {
+    fn from(path: String) -> Self {
+        Self { path }
+    }
+}
+
+impl<'a> From<&'a str> for UnifiedPath {
+    fn from(path: &'a str) -> Self {
         Self {
-            components: iter.into_iter().collect(),
+            path: path.to_owned(),
         }
     }
 }
 
-impl<'a> UnifiedPath<'a> {
-    /// Returns the components.
-    pub fn components(&self) -> &[Component<'a>] {
-        &self.components
+impl<'a> FromIterator<Component<'a>> for UnifiedPath {
+    fn from_iter<T: IntoIterator<Item = Component<'a>>>(iter: T) -> Self {
+        const COMPONENT_SEPARATOR: char = UnifiedPath::PRIMARY_COMPONENT_SEPARATOR;
+        const DRIVE_SEPARATOR: char = UnifiedPath::DRIVE_SEPARATOR.unwrap();
+        const CURRENT_DIR: &str = UnifiedPath::CURRENT_DIR;
+        const PARENT_DIR: &str = UnifiedPath::PARENT_DIR;
+        let mut path = String::new();
+        for component in iter {
+            match component {
+                Component::Prefix(s) => {
+                    path.push_str(s);
+                    path.push(DRIVE_SEPARATOR);
+                }
+                Component::Root => {
+                    path.push(COMPONENT_SEPARATOR);
+                }
+                Component::CurDir => {
+                    if !path.ends_with(COMPONENT_SEPARATOR) && !path.is_empty() {
+                        path.push(COMPONENT_SEPARATOR);
+                    }
+                    path.push_str(CURRENT_DIR);
+                }
+                Component::ParentDir => {
+                    if !path.ends_with(COMPONENT_SEPARATOR) && !path.is_empty() {
+                        path.push(COMPONENT_SEPARATOR);
+                    }
+                    path.push_str(PARENT_DIR);
+                }
+                Component::Normal(s) => {
+                    if !path.ends_with(COMPONENT_SEPARATOR) && !path.is_empty() {
+                        path.push(COMPONENT_SEPARATOR);
+                    }
+                    path.push_str(s);
+                }
+            }
+        }
+        Self { path }
     }
 }
 
-impl<'a> PurePath for UnifiedPath<'a> {
-    fn parent(&self) -> Option<Self> {
-        self.components.split_last().map(|(_, rest)| Self {
-            components: rest.to_vec(),
-        })
-    }
-
-    fn file_name(&self) -> Option<&str> {
-        self.components.last().and_then(|c| c.as_file_name())
-    }
-
-    fn join_in_place(&mut self, path: &Self) {
-        if path.is_absolute() {
-            self.components.clear();
-        }
-        self.components.extend_from_slice(path.components());
-    }
-
-    fn join(&self, path: &Self) -> Self {
-        if path.is_absolute() {
-            return path.clone();
-        }
-        let mut new = self.clone();
-        new.join_in_place(path);
-        new
-    }
-
-    fn file_stem(&self) -> Option<&str> {
-        todo!()
-    }
-
-    fn extension(&self) -> Option<&str> {
-        todo!()
-    }
-
-    fn is_absolute(&self) -> bool {
-        self.components.first() == Some(&Component::Root)
-    }
-
-    fn components(&self) -> impl DoubleEndedIterator<Item = Component<'_>> {
-        self.components.iter().cloned()
+impl From<PosixPath> for UnifiedPath {
+    fn from(path: PosixPath) -> Self {
+        path.components().collect()
     }
 }
 
-impl<'a> From<&'a crate::PosixPath> for UnifiedPath<'a> {
-    fn from(path: &'a crate::PosixPath) -> Self {
-        Self {
-            components: path.components().collect(),
-        }
+impl From<WindowsPath> for UnifiedPath {
+    fn from(path: WindowsPath) -> Self {
+        path.components().collect()
     }
 }
 
-impl<'a> From<&'a crate::WindowsPath> for UnifiedPath<'a> {
-    fn from(path: &'a crate::WindowsPath) -> Self {
-        Self {
-            components: path.components().collect(),
-        }
+impl AsRef<str> for UnifiedPath {
+    fn as_ref(&self) -> &str {
+        &self.path
     }
 }
 
-impl Div for UnifiedPath<'_> {
+impl Div for UnifiedPath {
     type Output = Self;
 
     fn div(mut self, rhs: Self) -> Self::Output {
@@ -91,95 +101,10 @@ impl Div for UnifiedPath<'_> {
     }
 }
 
-impl<'a> Div for &UnifiedPath<'a> {
-    type Output = UnifiedPath<'a>;
+impl Div for &UnifiedPath {
+    type Output = UnifiedPath;
 
     fn div(self, rhs: Self) -> Self::Output {
-        <UnifiedPath<'a> as PurePath>::join(self, rhs)
-    }
-}
-
-#[cfg(feature = "std")]
-mod std_impls {
-    use crate::{Path, UnifiedPath};
-    use std::{
-        fs::{Metadata, ReadDir},
-        io::Result,
-    };
-
-    #[cfg(target_os = "emscripten")]
-    impl Path for UnifiedPath<'_> {
-        fn canonicalize(&self) -> Result<Self> {
-            todo!()
-        }
-
-        fn try_exists(&self) -> Result<bool> {
-            todo!()
-        }
-
-        fn metadata(&self) -> Result<Metadata> {
-            todo!()
-        }
-
-        fn read_dir(&self) -> Result<ReadDir> {
-            todo!()
-        }
-
-        fn read_link(&self) -> Result<Self> {
-            todo!()
-        }
-
-        fn symlink_metadata(&self) -> Result<Metadata> {
-            todo!()
-        }
-    }
-    #[cfg(not(target_os = "emscripten"))]
-    impl Path for UnifiedPath<'_> {
-        fn canonicalize(&self) -> Result<Self> {
-            todo!()
-        }
-
-        fn try_exists(&self) -> Result<bool> {
-            todo!()
-        }
-
-        fn metadata(&self) -> Result<Metadata> {
-            todo!()
-        }
-
-        fn read_dir(&self) -> Result<ReadDir> {
-            todo!()
-        }
-
-        fn read_link(&self) -> Result<Self> {
-            todo!()
-        }
-
-        fn symlink_metadata(&self) -> Result<Metadata> {
-            todo!()
-        }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::vec;
-
-    #[test]
-    fn test_unified_path() {
-        let path = UnifiedPath::from_iter(vec![
-            Component::Root,
-            Component::Normal("foo"),
-            Component::Normal("bar"),
-        ]);
-        assert_eq!(
-            path.components(),
-            &[
-                Component::Root,
-                Component::Normal("foo"),
-                Component::Normal("bar")
-            ]
-        );
+        <UnifiedPath as PurePath>::join(self, rhs)
     }
 }
