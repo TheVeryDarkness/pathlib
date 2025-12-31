@@ -399,22 +399,22 @@ mod is_file {
     #[cfg_attr(miri, ignore)]
     fn std() {
         let path = PathBuf::from("./Cargo.toml");
-        assert_eq!(path.is_file(), true);
-        assert_eq!(path.is_dir(), false);
-        assert_eq!(path.is_symlink(), false);
+        assert!(path.is_file());
+        assert!(!path.is_dir());
+        assert!(!path.is_symlink());
         let metadata = path.metadata().unwrap();
-        assert_eq!(metadata.is_file(), true);
-        assert_eq!(metadata.is_dir(), false);
-        assert_eq!(metadata.is_symlink(), false);
+        assert!(metadata.is_file());
+        assert!(!metadata.is_dir());
+        assert!(!metadata.is_symlink());
 
         let path = PathBuf::from("./src");
-        assert_eq!(path.is_file(), false);
-        assert_eq!(path.is_dir(), true);
-        assert_eq!(path.is_symlink(), false);
+        assert!(!path.is_file());
+        assert!(path.is_dir());
+        assert!(!path.is_symlink());
         let metadata = path.metadata().unwrap();
-        assert_eq!(metadata.is_file(), false);
-        assert_eq!(metadata.is_dir(), true);
-        assert_eq!(metadata.is_symlink(), false);
+        assert!(!metadata.is_file());
+        assert!(metadata.is_dir());
+        assert!(!metadata.is_symlink());
     }
 
     #[test]
@@ -422,22 +422,22 @@ mod is_file {
     fn unified() {
         let path = PosixPath::from("./Cargo.toml");
         let path = UnifiedPath::from(path);
-        assert_eq!(path.is_file(), true);
-        assert_eq!(path.is_dir(), false);
-        assert_eq!(path.is_symlink(), false);
+        assert!(path.is_file());
+        assert!(!path.is_dir());
+        assert!(!path.is_symlink());
         let metadata = path.metadata().unwrap();
-        assert_eq!(metadata.is_file(), true);
-        assert_eq!(metadata.is_dir(), false);
-        assert_eq!(metadata.is_symlink(), false);
+        assert!(metadata.is_file());
+        assert!(!metadata.is_dir());
+        assert!(!metadata.is_symlink());
 
         let path = PosixPath::from("./src");
         let path = UnifiedPath::from(path);
-        assert_eq!(path.is_file(), false);
-        assert_eq!(path.is_dir(), true);
-        assert_eq!(path.is_symlink(), false);
+        assert!(!path.is_file());
+        assert!(path.is_dir());
+        assert!(!path.is_symlink());
         let metadata = path.metadata().unwrap();
-        assert_eq!(metadata.is_file(), false);
-        assert_eq!(metadata.is_dir(), true);
-        assert_eq!(metadata.is_symlink(), false);
+        assert!(!metadata.is_file());
+        assert!(metadata.is_dir());
+        assert!(!metadata.is_symlink());
     }
 }

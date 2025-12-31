@@ -3,6 +3,7 @@ RUST_BACKTRACE = "1"
 
 [alias]
 tw = "test --workspace --target wasm32-unknown-emscripten -- --show-output"
+ca = "clippy --all-features --all-targets -- -D warnings"
 
 # https://blog.therocode.net/2020/10/a-guide-to-rust-sdl2-emscripten
 # https://emscripten.org/docs/api_reference/Filesystem-API.html#filesystem-api-nodefs
