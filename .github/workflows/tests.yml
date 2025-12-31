@@ -32,13 +32,13 @@ jobs:
         run: rustup target add wasm32-unknown-emscripten
       - uses: mymindstorm/setup-emsdk@v14
       - name: cargo test
-        run: cargo test --workspace -- --nocapture
+        run: cargo test --workspace -- --show-output
       - name: cargo test without default features
-        run: cargo test --workspace --no-default-features -- --nocapture
+        run: cargo test --workspace --no-default-features -- --show-output
       - name: cargo test wasm32-unknown-emscripten
-        run: cargo test --workspace --target wasm32-unknown-emscripten -- --nocapture
+        run: cargo test --workspace --target wasm32-unknown-emscripten -- --show-output
       - name: cargo test without default features wasm32-unknown-emscripten
-        run: cargo test --workspace --no-default-features --target wasm32-unknown-emscripten -- --nocapture
+        run: cargo test --workspace --no-default-features --target wasm32-unknown-emscripten -- --show-output
 
   miri:
     name: MIRI Test

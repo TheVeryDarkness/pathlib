@@ -10,6 +10,7 @@
 )]
 #![forbid(missing_docs, rustdoc::all)]
 #![forbid(
+    clippy::all,
     clippy::correctness,
     clippy::complexity,
     clippy::suspicious,
@@ -24,6 +25,7 @@
     clippy::allow_attributes,
     clippy::allow_attributes_without_reason
 )]
+#![warn(clippy::todo, clippy::unimplemented, clippy::panic_in_result_fn)]
 #![cfg_attr(not(feature = "std"), no_std)]
 //! A simple path manipulation library.
 

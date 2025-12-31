@@ -107,59 +107,56 @@ mod std_impls {
         io::Result,
     };
 
-    cfg_if::cfg_if! {
-        if #[cfg(target_os = "emscripten")] {
-            impl Path for UnifiedPath<'_> {
-                fn canonicalize(&self) -> Result<Self> {
-                    todo!()
-                }
+    #[cfg(target_os = "emscripten")]
+    impl Path for UnifiedPath<'_> {
+        fn canonicalize(&self) -> Result<Self> {
+            todo!()
+        }
 
-                fn try_exists(&self) -> Result<bool> {
-                    todo!()
-                }
+        fn try_exists(&self) -> Result<bool> {
+            todo!()
+        }
 
-                fn metadata(&self) -> Result<Metadata> {
-                    todo!()
-                }
+        fn metadata(&self) -> Result<Metadata> {
+            todo!()
+        }
 
-                fn read_dir(&self) -> Result<ReadDir> {
-                    todo!()
-                }
+        fn read_dir(&self) -> Result<ReadDir> {
+            todo!()
+        }
 
-                fn read_link(&self) -> Result<Self> {
-                    todo!()
-                }
+        fn read_link(&self) -> Result<Self> {
+            todo!()
+        }
 
-                fn symlink_metadata(&self) -> Result<Metadata> {
-                    todo!()
-                }
-            }
-        } else {
-            impl Path for UnifiedPath<'_> {
-                fn canonicalize(&self) -> Result<Self> {
-                    todo!()
-                }
+        fn symlink_metadata(&self) -> Result<Metadata> {
+            todo!()
+        }
+    }
+    #[cfg(not(target_os = "emscripten"))]
+    impl Path for UnifiedPath<'_> {
+        fn canonicalize(&self) -> Result<Self> {
+            todo!()
+        }
 
-                fn try_exists(&self) -> Result<bool> {
-                    todo!()
-                }
+        fn try_exists(&self) -> Result<bool> {
+            todo!()
+        }
 
-                fn metadata(&self) -> Result<Metadata> {
-                    todo!()
-                }
+        fn metadata(&self) -> Result<Metadata> {
+            todo!()
+        }
 
-                fn read_dir(&self) -> Result<ReadDir> {
-                    todo!()
-                }
+        fn read_dir(&self) -> Result<ReadDir> {
+            todo!()
+        }
 
-                fn read_link(&self) -> Result<Self> {
-                    todo!()
-                }
+        fn read_link(&self) -> Result<Self> {
+            todo!()
+        }
 
-                fn symlink_metadata(&self) -> Result<Metadata> {
-                    todo!()
-                }
-            }
+        fn symlink_metadata(&self) -> Result<Metadata> {
+            todo!()
         }
     }
 }

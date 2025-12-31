@@ -5,7 +5,6 @@ use pathlib::{
 #[cfg(feature = "std")]
 use std::{
     ffi::OsStr,
-    fs,
     path::{Path, PathBuf},
 };
 
@@ -320,23 +319,26 @@ fn extension() {
     }
 }
 
-#[test]
-#[cfg_attr(miri, ignore)]
-fn fs() {
+mod fs_ {
+    use std::{fs, path::PathBuf};
+
+    #[test]
     #[cfg(feature = "std")]
-    {
+    #[cfg_attr(miri, ignore)]
+    // Cannot get metadata correctly.
+    #[cfg_attr(target_os = "emscripten", should_panic = "assertion failed")]
+    fn std() {
         let dir = PathBuf::from("./tmp");
         if let Ok(metadata) = fs::metadata(&dir) {
             eprintln!("Metadata of {:?} is {:?}", dir, metadata);
-            if metadata.is_dir() {
-                fs::remove_dir(&dir).unwrap();
-            }
+            fs::remove_dir_all(&dir).unwrap();
         } else {
             eprintln!("No metadata for {:?}", dir);
         }
         fs::create_dir(&dir).unwrap();
         assert!(dir.exists());
         let metadata = dir.metadata().unwrap();
+        eprintln!("Metadata of {:?} is {:?}", dir, metadata);
         assert!(metadata.is_dir());
         assert!(!metadata.is_file());
         assert!(!metadata.is_symlink());
@@ -385,5 +387,63 @@ fn fs() {
         fs::remove_file(file_1).unwrap();
 
         fs::remove_dir(dir).unwrap();
+    }
+}
+
+mod is_file {
+    use std::path::PathBuf;
+
+    use pathlib::{Path, PosixPath, UnifiedPath};
+
+    #[test]
+    #[cfg(feature = "std")]
+    #[cfg_attr(miri, ignore)]
+    // Cannot get metadata correctly.
+    #[cfg_attr(
+        target_os = "emscripten",
+        should_panic = "assertion `left == right` failed"
+    )]
+    fn std() {
+        let path = PathBuf::from("./Cargo.toml");
+        assert_eq!(path.is_file(), true);
+        assert_eq!(path.is_dir(), false);
+        assert_eq!(path.is_symlink(), false);
+        let metadata = path.metadata().unwrap();
+        assert_eq!(metadata.is_file(), true);
+        assert_eq!(metadata.is_dir(), false);
+        assert_eq!(metadata.is_symlink(), false);
+
+        let path = PathBuf::from("./src");
+        assert_eq!(path.is_file(), false);
+        assert_eq!(path.is_dir(), true);
+        assert_eq!(path.is_symlink(), false);
+        let metadata = path.metadata().unwrap();
+        assert_eq!(metadata.is_file(), false);
+        assert_eq!(metadata.is_dir(), true);
+        assert_eq!(metadata.is_symlink(), false);
+    }
+
+    #[test]
+    #[cfg_attr(miri, ignore)]
+    fn unified() {
+        let path = PosixPath::from("./Cargo.toml");
+        let path = UnifiedPath::from(&path);
+        assert_eq!(path.is_file(), true);
+        assert_eq!(path.is_dir(), false);
+        assert_eq!(path.is_symlink(), false);
+        let metadata = path.metadata().unwrap();
+        assert_eq!(metadata.is_file(), true);
+        assert_eq!(metadata.is_dir(), false);
+        assert_eq!(metadata.is_symlink(), false);
+
+        let path = PosixPath::from("./src");
+        let path = UnifiedPath::from(&path);
+        assert_eq!(path.is_file(), false);
+        assert_eq!(path.is_dir(), true);
+        assert_eq!(path.is_symlink(), false);
+        let metadata = path.metadata().unwrap();
+        assert_eq!(metadata.is_file(), false);
+        assert_eq!(metadata.is_dir(), true);
+        assert_eq!(metadata.is_symlink(), false);
     }
 }

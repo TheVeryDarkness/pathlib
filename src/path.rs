@@ -15,14 +15,26 @@ pub trait Path: PurePath {
     /// Tries to check whether the path exists.
     fn try_exists(&self) -> Result<bool>;
 
-    // /// Returns whether the path is a directory.
-    // fn is_dir(&self) -> bool;
+    /// Returns whether the path is a directory.
+    fn is_dir(&self) -> bool {
+        self.metadata()
+            .map(|metadata| metadata.is_dir())
+            .unwrap_or(false)
+    }
 
-    // /// Returns whether the path is a file.
-    // fn is_file(&self) -> bool;
+    /// Returns whether the path is a file.
+    fn is_file(&self) -> bool {
+        self.metadata()
+            .map(|metadata| metadata.is_file())
+            .unwrap_or(false)
+    }
 
-    // /// Returns whether the path is a symlink.
-    // fn is_symlink(&self) -> bool;
+    /// Returns whether the path is a symlink.
+    fn is_symlink(&self) -> bool {
+        self.symlink_metadata()
+            .map(|metadata| metadata.file_type().is_symlink())
+            .unwrap_or(false)
+    }
 
     /// Returns the metadata.
     fn metadata(&self) -> Result<Metadata>;
