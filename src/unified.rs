@@ -1,4 +1,4 @@
-use std::ops::Div;
+use core::ops::Div;
 
 use crate::pure::ParsablePath;
 use crate::{Component, PosixPath, PurePath, String, ToOwned, WindowsPath};
@@ -97,7 +97,7 @@ impl AsRef<str> for UnifiedPath {
 impl Div for UnifiedPath {
     type Output = Self;
 
-    fn div(mut self, rhs: Self) -> Self::Output {
+    fn div(mut self, rhs: Self) -> <Self as Div>::Output {
         <Self as PurePath>::join_in_place(&mut self, &rhs);
         self
     }
@@ -106,7 +106,7 @@ impl Div for UnifiedPath {
 impl Div for &UnifiedPath {
     type Output = UnifiedPath;
 
-    fn div(self, rhs: Self) -> Self::Output {
+    fn div(self, rhs: Self) -> <Self as Div>::Output {
         <UnifiedPath as PurePath>::join(self, rhs)
     }
 }
