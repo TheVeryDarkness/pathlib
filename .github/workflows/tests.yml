@@ -31,6 +31,7 @@ jobs:
       - name: Install Emscripten Target
         run: rustup target add wasm32-unknown-emscripten
       - uses: mymindstorm/setup-emsdk@v14
+      - run: emcc --version
       - name: cargo test
         run: cargo test --workspace -- --show-output
       - name: cargo test without default features
