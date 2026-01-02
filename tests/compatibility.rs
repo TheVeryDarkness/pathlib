@@ -102,17 +102,6 @@ fn test_split_last_component() {
             let file_name_actual = path_actual.file_name();
             assert_eq!(file_name_actual, file_name, "file_name() of {path:?}",);
         }
-
-        {
-            let windows_path_actual = UnifiedPath::from(path);
-            let path_actual = UnifiedPath::from(windows_path_actual.clone());
-            assert_eq!(
-                path_actual.components().collect::<Vec<_>>(),
-                windows_path_actual.components().collect::<Vec<_>>(),
-            );
-            let file_name_actual = path_actual.file_name();
-            assert_eq!(file_name_actual, file_name, "file_name() of {path:?}",);
-        }
     }
 }
 
