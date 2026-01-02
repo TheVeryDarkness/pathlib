@@ -102,6 +102,17 @@ fn test_split_last_component() {
             let file_name_actual = path_actual.file_name();
             assert_eq!(file_name_actual, file_name, "file_name() of {path:?}",);
         }
+
+        {
+            let windows_path_actual = UnifiedPath::from(path);
+            let path_actual = UnifiedPath::from(windows_path_actual.clone());
+            assert_eq!(
+                path_actual.components().collect::<Vec<_>>(),
+                windows_path_actual.components().collect::<Vec<_>>(),
+            );
+            let file_name_actual = path_actual.file_name();
+            assert_eq!(file_name_actual, file_name, "file_name() of {path:?}",);
+        }
     }
 }
 
@@ -176,6 +187,23 @@ fn test_components() {
 
         {
             let path_actual = WindowsPath::from(path);
+            let components_actual: Vec<_> = path_actual.components().collect();
+            assert_eq!(components_actual, components, "components() of {path:?}");
+            let components_actual: Vec<_> = path_actual
+                .components()
+                .rev()
+                .collect::<Vec<_>>()
+                .into_iter()
+                .rev()
+                .collect();
+            assert_eq!(
+                components_actual, components,
+                "components() of {path:?} in reverse",
+            );
+        }
+
+        {
+            let path_actual = UnifiedPath::from(path);
             let components_actual: Vec<_> = path_actual.components().collect();
             assert_eq!(components_actual, components, "components() of {path:?}");
             let components_actual: Vec<_> = path_actual
@@ -316,15 +344,24 @@ fn extension() {
                 "file_stem() and extension() of {path:?}",
             );
         }
+
+        {
+            let path = UnifiedPath::from(path);
+            assert_eq!(
+                (path.file_stem(), path.extension()),
+                (stem, extension),
+                "file_stem() and extension() of {path:?}",
+            );
+        }
     }
 }
 
+#[cfg(feature = "std")]
 mod fs_ {
     use std::fs;
     use std::path::PathBuf;
 
     #[test]
-    #[cfg(feature = "std")]
     #[cfg_attr(miri, ignore)]
     fn std() {
         let dir = PathBuf::from("./tmp");
@@ -389,13 +426,13 @@ mod fs_ {
     }
 }
 
+#[cfg(feature = "std")]
 mod is_file {
     use std::path::PathBuf;
 
     use pathlib::{Path, PosixPath, UnifiedPath};
 
     #[test]
-    #[cfg(feature = "std")]
     #[cfg_attr(miri, ignore)]
     fn std() {
         let path = PathBuf::from("./Cargo.toml");
